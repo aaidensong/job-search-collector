@@ -386,7 +386,7 @@ Use location as a tie-breaker when the same title clearly represents different o
 If the same posting appears through more than one discovery path, keep one Tracker record and preserve the DiscoveryType and Source of the path that first caused the row to enter Tracker. Do not combine multiple methods or platforms into DiscoveryType or Source because users may filter those fields.
 
 Record later confirmed paths in Notes, for example `Also found via Mail: LinkedIn.` or `Also found via Search: Greenhouse.`
-Prefer the cleanest usable link.
+For a within-run duplicate before the row is first written, keep the usable Link from the same discovery path whose DiscoveryType and Source are retained. Use another path's Link only if that retained-path Link is unusable.
 
 Do not infer a parent company from an unfamiliar subsidiary or brand name.
 Preserve the source wording.
