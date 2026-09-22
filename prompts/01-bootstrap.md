@@ -777,19 +777,20 @@ First pass:
 - use the highest-priority unused combination of role phrase and location/work-model intent that is supported by the profile;
 - total first-pass site queries = 12.
 
-Before deciding whether to broaden, evaluate first-pass results far enough to count `verified new Strong/Possible` roles:
+Before deciding whether to broaden, evaluate first-pass results far enough to count `verified surfaced Strong/Possible` roles:
 - `verified` = the actual posting page was opened and confirmed to represent a currently open job;
-- `new` = it is not a historical duplicate under the existing Tracker comparison rules;
-- the default duplicate key is comparison-normalized Company + comparison-normalized Title using [4A], but clear evidence of a materially different requisition may make it a distinct opening;
+- `surfaced` = after applying the historical-disposition rules in [11], the posting is not suppressed and is eligible to be shown again, including a re-evaluated existing row;
+- use comparison-normalized Company + comparison-normalized Title from [4A] to find matching Tracker history;
+- do not try to determine whether a matching posting is a new requisition, repost, or repeated collection;
 - use the SAME hard-filter and fit rules defined later in this prompt. This is a provisional pass for search branching, not a separate matching standard.
 
-If the first pass produces at least 5 verified new Strong/Possible roles:
+If the first pass produces at least 5 verified surfaced Strong/Possible roles:
 - the measured seven ATS families may receive one second query each: Workday, Greenhouse, Ashby, Lever, BambooHR, iCIMS, Dayforce;
 - use a different high-priority role/location combination from the first query;
 - add at most 7 queries;
 - total site queries are therefore at most 19.
 
-If the first pass produces fewer than 5 verified new Strong/Possible roles:
+If the first pass produces fewer than 5 verified surfaced Strong/Possible roles:
 - use the remaining query budget for broader web search before giving any measured ATS a second query;
 - broader searches should combine the highest-priority role phrases and locations with terms that favor official careers/open-role pages;
 - exclude obvious aggregator-only result paths when useful, such as LinkedIn Jobs, Indeed, and Glassdoor search-result pages;
@@ -820,8 +821,9 @@ If the actual posting page cannot be opened or cannot be associated confidently 
 - report it in Human review or Diagnostics when useful.
 
 If the posting is confirmed closed, expired, removed, or unavailable and Company + Title can still be identified confidently:
-- classify it as Excluded with reason `posting unavailable`;
-- it may be written to Tracker so the workflow remembers that it was already reviewed.
+- set Status = Excluded;
+- Notes must begin `Closed: `, for example `Closed: posting unavailable`;
+- it may be written to Tracker so the workflow remembers that it was already reviewed, but this state remains eligible for re-evaluation if the posting surfaces again.
 
 For web-discovered rows:
 - DiscoveryType = Search;
@@ -877,7 +879,7 @@ If the URL is missing, broken, inaccessible, or cannot be associated with the co
 - add `link not extracted` to Notes;
 - never reconstruct or guess a URL.
 
-If a posting is clearly expired or removed, keep the URL only if useful for identification and exclude the job with reason `posting unavailable`.
+If a posting is clearly expired or removed, keep the URL only if useful for identification and set Status = Excluded with Notes beginning `Closed: `, for example `Closed: posting unavailable`.
 
 [8. DEDUPLICATE WITHIN THE CURRENT RUN]
 
@@ -970,14 +972,47 @@ Weak matches stay out of the main shortlist, but when the posting itself is veri
 
 Run confirmed historical comparison only when tracker_read_status = VERIFIED.
 
-Rules:
-- same comparison-normalized Company + same comparison-normalized Title: historical duplicate, do not add unless evidence shows a materially different requisition;
-- same comparison-normalized Company + different comparison-normalized Title: keep, but add concise prior-company context when useful;
-- staffing or recruiting agencies are not automatically the employer. Do not use an agency name by itself to prove a duplicate.
+Use comparison-normalized Company + comparison-normalized Title from [4A] to find matching Tracker history. An identity match by itself does NOT mean suppress.
 
-`DiscoveryType` records the primary discovery method and `Source` records the concrete platform. Do not use a Channel field. Keep agency/recruiter context in Notes when it materially helps the user.
+For each matching historical row, apply this order:
 
-If a previously excluded posting was unavailable or expired, a clearly new requisition can be reconsidered when evidence shows it is a new opening.
+1. If AppliedAt is non-empty -> SUPPRESS.
+2. Else if Status = Applied -> SUPPRESS.
+3. Else if Status = Closed -> SUPPRESS.
+4. Else if Status = Excluded:
+   - if Notes begins `Excluded: ` -> SUPPRESS as a hard exclusion;
+   - if Notes begins `Fit: Weak. ` -> RE-EVALUATE;
+   - if Notes begins `Closed: ` -> RE-EVALUATE;
+   - if Notes is any other non-empty text -> SUPPRESS as a manual/legacy exclusion;
+   - if Notes is blank -> SUPPRESS and increment a Diagnostics count for blank-note Excluded rows. Do not reactivate it automatically.
+5. Otherwise, including Status = Candidate -> RE-EVALUATE.
+
+Do not try to distinguish a repost, a new requisition, or repeated collection. Do not use job ID, URL differences, or posting date to make that determination. If an unapplied row is eligible for re-evaluation, re-use the existing Tracker row and let the user judge the posting from the current link and content.
+
+For a re-evaluated row:
+- run the current hard-filter and fit rules again;
+- Strong or Possible -> Status = Candidate and show it to the user again;
+- Weak -> Status = Excluded and Notes must begin `Fit: Weak. `;
+- hard exclusion -> Status = Excluded and Notes must begin `Excluded: `;
+- confirmed closed, expired, removed, or unavailable -> Status = Excluded and Notes must begin `Closed: `.
+
+When the row surfaces again, append one provenance note:
+`Re-surfaced YYYY-MM-DD via {DiscoveryType} ({Source})`
+using the current discovery path and Config.schedule_timezone.
+
+Preserve the existing row's original DiscoveryType and Source. Preserve ReceivedAt as the first-discovery timestamp.
+
+Link handling for a historical row:
+- keep the existing Link when it still works;
+- replace it only when the existing Link is broken, inaccessible, or no longer usable and the newly discovered Link is usable for the same posting;
+- do not replace a working Link merely because the new Link is an official ATS or Careers URL;
+- when Link is replaced, append `Link replaced YYYY-MM-DD` to Notes.
+
+Same comparison-normalized Company + different comparison-normalized Title is not an identity match; keep it, with concise prior-company context only when useful.
+
+Staffing or recruiting agencies are not automatically the employer. Do not use an agency name by itself to prove an identity match.
+
+`DiscoveryType` and `Source` always describe the first discovery path. Re-discovery paths belong only in Notes. Do not use a Channel field.
 
 [12. SINGLE-PASS INBOX RECONCILIATION]
 
@@ -1075,8 +1110,25 @@ For a normal web-discovered candidate:
 
 For all new rows:
 - leave AppliedAt, RespondedAt, and Result blank unless supported by reconciliation evidence;
-- preserve verified posted-date/open-state information in Notes when useful;
-- if the same posting is later found by another method or platform, preserve the existing DiscoveryType and Source and append the later path to Notes rather than combining values in those filterable fields.
+- preserve verified posted-date/open-state information in Notes when useful.
+
+For a historical row that is re-evaluated and surfaced again:
+- update the existing row; do not append a duplicate row;
+- never change ReceivedAt;
+- never change DiscoveryType;
+- never change Source;
+- append `Re-surfaced YYYY-MM-DD via {DiscoveryType} ({Source})` using the current re-discovery path;
+- keep the existing Link if it still works;
+- replace Link only when the existing Link is unusable and the new Link is usable for the same posting;
+- if Link is replaced, append `Link replaced YYYY-MM-DD` to Notes;
+- apply the current evaluation result to Status and the recognized Notes prefix without deleting useful historical provenance notes.
+
+Recognized Excluded-note prefixes:
+- `Excluded: {reason}` = hard filter, suppressed on future identity matches;
+- `Fit: Weak. {reason}` = weak-fit result, eligible for future re-evaluation;
+- `Closed: {reason}` = posting closed/expired/removed/unavailable, eligible for future re-evaluation.
+
+An Excluded row with non-empty Notes that use none of these prefixes is treated as a manual/legacy exclusion and suppressed. An Excluded row with blank Notes is also suppressed, and its count must be reported in Diagnostics.
 
 For automatic status reconciliation:
 - clear application evidence -> Status=Applied and AppliedAt if blank;
@@ -1181,7 +1233,7 @@ Report:
 - previous and resulting last_successful_web_discovery_date
 - whether Web Discovery ran, skipped, partially failed, or failed
 - Web Discovery query count and whether broader search was used
-- verified open web postings and verified new Strong/Possible count
+- verified open web postings and verified surfaced Strong/Possible count
 - tracker_read_status and row-count comparison
 - number of messages read per enabled source
 - number of all-inbox messages read for reconciliation when enabled
