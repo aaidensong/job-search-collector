@@ -188,6 +188,10 @@ Bootstrap은 Job Search Collector 전용 구조를 사용하는 새 Tracker를 �
 - 지원 상태 변경은 명확한 근거가 있을 때만 수행
 - 무응답이라는 이유만으로 자동 Closed 처리하지 않음
 
+## 기여하기
+
+채용 알림 형식, 매칭 예외, 예시, 번역을 개선하려면 [CONTRIBUTING.md](CONTRIBUTING.md)를 읽고 [Issue를 등록](https://github.com/aaidensong/job-search-collector/issues/new/choose)해 주세요. 문제 사례에는 가상 또는 익명화한 데이터만 사용합니다.
+
 ## 상세 문서
 
 README는 일반 사용자 중심으로 단순하게 유지합니다. 구현 세부사항은 `docs/`에서 확인할 수 있습니다.
@@ -208,6 +212,7 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
+├── LICENSE-SCOPE.md
 ├── assets/
 │   ├── sample-workflow.gif
 │   ├── tracker-preview.png
@@ -245,10 +250,10 @@ job-search-collector/
 
 ## 라이선스
 
-별도 표기가 없는 한 이 저장소의 원본 프롬프트, 문서, 예시, 템플릿은 **Creative Commons Attribution 4.0 International (CC BY 4.0)** 라이선스를 따릅니다.
+별도 표기가 없는 한 이 저장소의 원본 프롬프트, 문서, 예시, 템플릿, 미리보기 이미지, 선택적 이미지 생성 스크립트는 **Creative Commons Attribution 4.0 International (CC BY 4.0)** 라이선스를 따릅니다.
 
 권장 표기:
 
 > Job Search Collector by Aiden, licensed under CC BY 4.0.
 
-자세한 내용은 `LICENSE`와 https://creativecommons.org/licenses/by/4.0/ 를 참고하세요.
+표준 약관은 [LICENSE](LICENSE), 저장소별 적용 범위와 제외 사항은 [LICENSE-SCOPE.md](LICENSE-SCOPE.md)를 참고하세요.
