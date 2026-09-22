@@ -257,7 +257,7 @@ Candidate collection always searches the confirmed Gmail Sources for the target 
 
 When Web Discovery is enabled and `Control.last_successful_web_discovery_date` is blank or earlier than the current local calendar date, the same Scheduled Task also runs Web Discovery. This happens automatically at the scheduled time. The user does not manually trigger a second task.
 
-Web Discovery first searches the configured Phase 1 ATS domain families using profile-generated queries. It verifies real posting pages and their open state. If the first pass yields fewer than five verified new Strong/Possible roles, remaining query budget is used for broader web search. Mail and web candidates then enter the same matching and deduplication pipeline.
+Web Discovery first searches the configured Phase 1 ATS domain families using profile-generated queries. It verifies real posting pages and their open state. If the first pass yields fewer than five verified surfaced Strong/Possible roles, remaining query budget is used for broader web search. Mail and web candidates then enter the same matching and deduplication pipeline.
 
 A Web Discovery failure does not cause the Gmail workflow to fail, and its success marker is tracked separately.
 
