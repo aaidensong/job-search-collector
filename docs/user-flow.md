@@ -284,9 +284,11 @@ One sender may produce several message types.
 
 ChatGPT expands digest messages, extracts individual jobs, preserves valid links, normalizes stable LinkedIn links when a job ID is explicit, and never invents missing URLs.
 
-Within-run duplicates use Company + Title, with location as a tie-breaker when needed.
+Within-run duplicates use comparison-normalized Company + Title, with location as a tie-breaker when needed.
 
-If the same job appears through multiple routes, keep one row. Preserve the DiscoveryType and Source that first caused the row to enter Tracker, and record later discovery paths in Notes.
+Within-run deduplication is separate from historical disposition. Finding the same identity in Tracker does not automatically mean suppress.
+
+If the same job appears through multiple routes in the current run, keep one record. Preserve the DiscoveryType and Source that first caused the row to enter Tracker, and record later discovery paths in Notes.
 
 If company identity is ambiguous, ChatGPT does not guess the parent company. Suspected duplicates go to Human review rather than being merged automatically.
 
@@ -300,9 +302,24 @@ A Strong match for an experienced user should normally have a meaningful reason 
 
 ### Step 12 - GPT - Compare with Tracker
 
-Before absence or historical duplicate judgments, ChatGPT verifies that the number of Tracker rows read matches `Control.tracker_data_rows`.
+Before absence or historical-history judgments, ChatGPT verifies that the number of Tracker rows read matches `Control.tracker_data_rows`.
 
 If the read is incomplete, it does not claim that a row is absent and skips history-dependent reconciliation.
+
+For the same comparison-normalized Company + Title, historical disposition follows this order:
+
+1. AppliedAt non-empty -> suppress.
+2. Else Status=Applied -> suppress.
+3. Else Status=Closed -> suppress.
+4. Else Status=Excluded:
+   - `Excluded: ` -> suppress.
+   - `Fit: Weak. ` -> re-evaluate.
+   - `Closed: ` -> re-evaluate.
+   - other non-empty Notes -> suppress as a manual/legacy exclusion.
+   - blank Notes -> suppress and report the count in Diagnostics.
+5. Otherwise, including Candidate -> re-evaluate.
+
+The workflow does not try to determine whether a posting is a repost or a new requisition. Re-evaluable rows are judged again using the current posting and profile.
 
 ### Step 13 - GPT - Reconcile applications and responses in one inbox pass
 
@@ -319,7 +336,12 @@ Ambiguous future-intent language goes to Human review.
 
 When writes are permitted:
 
-- suitable jobs are added as Candidate
+- suitable new jobs are added as Candidate
+- re-evaluable historical rows reuse the existing row instead of creating a duplicate
+- a re-surfaced Strong/Possible row returns to Candidate and is shown again
+- ReceivedAt, DiscoveryType, and Source remain fixed to first discovery
+- Notes records `Re-surfaced YYYY-MM-DD via {DiscoveryType} ({Source})` using the current re-discovery path
+- a working existing Link is kept; it is replaced only when unusable, and replacement adds `Link replaced YYYY-MM-DD` to Notes
 - clear application evidence can set Status=Applied and AppliedAt
 - clear replies can fill RespondedAt
 - explicit rejection can set Status=Closed and Result=Rejected
