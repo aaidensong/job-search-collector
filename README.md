@@ -149,6 +149,7 @@ A few important safeguards are built into the workflow:
 - sender address alone does not define a message type;
 - partial Tracker reads are not used to prove that something is absent;
 - harmless Company/Title formatting differences such as dash variants, whitespace, case, and supported legal suffixes are normalized for duplicate comparison;
+- previously seen but unapplied jobs can surface again instead of being permanently hidden as historical duplicates;
 - missing links are left blank instead of being invented;
 - unfamiliar company relationships are not guessed;
 - ambiguous recruiter or response evidence goes to Human review;
