@@ -8,14 +8,20 @@ Job Search Collector는 ChatGPT Scheduled Task로 Gmail 채용 알림을 확인�
 
 **Gmail 채용 알림 + 선택적 웹 탐색 → 경력 적합도 판단 → 하나의 Google Sheets Tracker**
 
+![가상 채용 알림부터 적합도 판단, 지원 확인, 회신까지 보여주는 4단계 예시](assets/sample-workflow.gif)
+
+*가상 데이터를 사용한 설명용 영상입니다. 실제 연결 계정의 녹화 화면은 아닙니다.*
+
 ### 결과 먼저 보기
+
+![가상 회사와 Tracker 일부 열을 보여주는 Google Sheets 형태의 예시](assets/tracker-preview.png)
 
 아래는 **가상 데이터로 만든 예시**이며 Tracker 열 일부만 보여줍니다. 실제 Tracker에는 지원일과 회신일을 포함해 [14개 열](docs/sheet-schema.md#tracker)이 있습니다. 적합도 근거는 별도의 점수 열 대신 `Notes`에 기록됩니다.
 
 | Status | Company | Title | Location | Notes | ReceivedAt | DiscoveryType | Source |
 |---|---|---|---|---|---|---|---|
-| Candidate | ExampleCo | Senior Product Designer | Toronto, ON | B2C 퍼널과 디자인 시스템 경험이 맞음 | 2026-09-07 | Mail | LinkedIn |
-| Applied | SampleWorks | Product Designer | Remote, Canada | 지원 확인 메일 감지 | 2026-09-06 | Search | Company Careers |
+| Candidate | Northstar Labs | Product Designer | Remote, Canada | 소비자 온보딩 경험이 맞음 | 2026-09-08 | Search | Company Careers |
+| Applied | ExampleCo | Senior Product Designer | Toronto, ON | B2C 퍼널과 디자인 시스템 경험이 맞음 | 2026-09-07 | Mail | LinkedIn |
 
 계정 연결 없이 [가상 실행 예시](examples/sample-run.md)에서 채용 알림부터 리크루터 회신까지의 흐름을 확인할 수 있습니다. [일일 출력 예시](examples/output.example.md)에는 적합도 판단, 제외 사유, 진단 정보가 있습니다.
 
@@ -202,6 +208,10 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
+├── assets/
+│   ├── sample-workflow.gif
+│   ├── tracker-preview.png
+│   └── social-preview.png
 ├── job-search-collector-flow.png
 ├── job-search-collector-flow-ko.png
 ├── prompts/
@@ -211,6 +221,8 @@ job-search-collector/
 │   └── 04-update-profile.md
 ├── profiles/
 │   └── profile.template.md
+├── tools/
+│   └── render_previews.py
 ├── docs/
 └── examples/
 ```
