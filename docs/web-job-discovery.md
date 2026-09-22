@@ -102,22 +102,22 @@ First pass:
 - one site-restricted query for each of the 12 ATS domain families
 - total: 12
 
-Before choosing the second stage, first-pass results must be evaluated enough to count verified new Strong/Possible jobs.
+Before choosing the second stage, first-pass results must be evaluated enough to count verified surfaced Strong/Possible jobs.
 
 Definitions:
 
 - `verified`: the actual posting page was opened and confirmed to represent a currently open job
-- `new`: not a historical duplicate under the existing Tracker comparison rules
-- default historical duplicate key: comparison-normalized Company + comparison-normalized Title using the shared rules in `docs/matching-rules.md`
-- a materially different requisition can be treated as a distinct opening when supported by evidence
+- `surfaced`: after applying the shared historical-disposition rules, the posting is not suppressed and is eligible to be shown, including a re-evaluated existing row
+- identity lookup uses comparison-normalized Company + comparison-normalized Title from `docs/matching-rules.md`
+- do not try to classify a match as a repost, new requisition, or repeated collection
 
-If first pass yields at least 5 verified new Strong/Possible roles:
+If first pass yields at least 5 verified surfaced Strong/Possible roles:
 
 - measured ATS families may receive a second query: Workday, Greenhouse, Ashby, Lever, BambooHR, iCIMS, Dayforce
 - maximum 7 additional queries
 - maximum 19 site queries total
 
-If first pass yields fewer than 5 verified new Strong/Possible roles:
+If first pass yields fewer than 5 verified surfaced Strong/Possible roles:
 
 - use the remaining query budget for broader web search
 - broader search has priority over a second query for the measured ATS families
@@ -165,9 +165,10 @@ If the posting page cannot be opened or cannot be associated confidently with th
 
 If the posting is confirmed closed, expired, removed, or unavailable and Company + Title remain identifiable:
 
-- classify it as Excluded
-- Notes begin `Excluded: posting unavailable`
-- it may be written to Tracker so later discovery can recognize that it was already reviewed
+- set Status = Excluded
+- Notes begin `Closed: `, for example `Closed: posting unavailable`
+- it may be written to Tracker so later discovery can recognize that it was reviewed
+- this state remains eligible for re-evaluation if the posting surfaces again
 
 ## Fit and eligibility
 
@@ -236,10 +237,14 @@ Examples:
 
 These fields remain separate so users can filter discovery method independently from platform.
 
-If the same posting is later found through another method or platform:
+If a matching historical row surfaces again:
 
-- keep the DiscoveryType and Source that first caused the row to enter Tracker
-- add the later confirmed path to Notes
+- keep the first-discovery DiscoveryType and Source unchanged
+- keep the first-discovery ReceivedAt unchanged
+- add the later path only to Notes as `Re-surfaced YYYY-MM-DD via {DiscoveryType} ({Source})`
+- keep the existing Link while it works
+- replace Link only when the existing Link is unusable and the new Link is usable for the same posting
+- if Link is replaced, add `Link replaced YYYY-MM-DD` to Notes
 - do not combine multiple values inside DiscoveryType or Source
 
 ## ReceivedAt
@@ -250,7 +255,9 @@ For Mail rows:
 
 For Search rows:
 
-- use the web discovery timestamp in `Config.schedule_timezone`
+- use the web discovery timestamp in `Config.schedule_timezone` when the row first enters Tracker
+
+ReceivedAt is never changed when an existing row re-surfaces.
 
 A posting date, when available, belongs in Notes rather than replacing ReceivedAt.
 
@@ -275,7 +282,7 @@ Web Discovery failure never blocks Gmail processing or advancement of Gmail's `l
 
 ## Completion criterion
 
-Phase 1 is functionally complete when ATS and broader web discovery can place verified jobs into the unified Tracker and existing duplicate handling prevents the same opportunity from being reintroduced as a new candidate.
+Phase 1 is functionally complete when ATS and broader web discovery can place verified jobs into the unified Tracker, suppress already-applied or intentionally excluded history, and allow unapplied re-evaluable opportunities to surface again without creating duplicate rows.
 
 Operational quality should then be evaluated using:
 
