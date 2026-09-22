@@ -168,11 +168,25 @@ Existing Tracker rows are not migrated or rewritten by this layer. They are norm
 
 ## 6. History and completeness layer
 
-Before making absence or historical duplicate judgments, the workflow compares rows actually read from Tracker with `Control.tracker_data_rows`.
+Before making absence or historical-history judgments, the workflow compares rows actually read from Tracker with `Control.tracker_data_rows`.
+
+When completeness is verified, a comparison-normalized Company + Title identity match is resolved by historical disposition rather than suppressed automatically:
+
+- AppliedAt non-empty -> suppress
+- Status=Applied -> suppress
+- Status=Closed -> suppress
+- Status=Excluded with `Excluded: ` -> suppress
+- Status=Excluded with `Fit: Weak. ` -> re-evaluate
+- Status=Excluded with `Closed: ` -> re-evaluate
+- Status=Excluded with other non-empty Notes -> suppress
+- Status=Excluded with blank Notes -> suppress and count in Diagnostics
+- otherwise, including Candidate -> re-evaluate
+
+The workflow does not try to identify reposts or new requisitions. Re-evaluable history reuses the existing row and can surface again after current fit/hard-filter evaluation.
 
 When completeness is not verified:
 - absence claims are disabled
-- historical duplicate confirmation is disabled
+- historical disposition confirmation is disabled
 - application/response reconciliation is skipped
 - candidate writes are not applied
 - `last_successful_scan_date` does not advance
@@ -200,7 +214,11 @@ Clear recruiter statements that a profile, resume, or application was submitted 
 ## 8. Tracker automation layer
 
 When Tracker completeness is verified and Google Drive write actions are available, the task can:
-- append suitable jobs as `Candidate`
+- append suitable new jobs as `Candidate`
+- re-use and re-evaluate unapplied historical rows instead of appending duplicate rows
+- preserve first-discovery ReceivedAt, DiscoveryType, and Source when a row re-surfaces
+- append re-surfacing provenance to Notes
+- keep an existing working Link, replacing it only when unusable and recording `Link replaced YYYY-MM-DD`
 - reconcile clear application evidence to `Applied`
 - fill `AppliedAt`
 - fill `RespondedAt` after clear employer or recruiter responses
