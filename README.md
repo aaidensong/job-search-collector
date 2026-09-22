@@ -2,13 +2,31 @@
 
 # Job Search Collector
 
-Job Search Collector is a ChatGPT Scheduled Task workflow that reads job-alert emails from Gmail, can discover additional jobs on the public web, matches postings against a private career profile, and keeps opportunities organized in Google Sheets when permissions allow.
+**Turn job alerts into a job tracker tailored to your experience.**
 
-The public repository contains workflow logic and templates only. Each user's career profile, email data, and application history stay in that user's connected Google account.
+Job Search Collector uses a ChatGPT Scheduled Task to review Gmail job alerts and, optionally, discover public job postings. It compares opportunities with your private career profile, surfaces reasons for a match, removes duplicates, and tracks applications and replies in Google Sheets when the connected tools allow it.
 
-![Job Search Collector workflow](job-search-collector-flow.png)
+**Gmail alerts + optional web discovery → career fit → one Google Sheets tracker**
 
-> Product behavior, available apps, and Scheduled Task capabilities can change. Last verified against OpenAI documentation: 2026-09-08.
+### See the result first
+
+This **fictional example** shows a few of the Tracker's columns. The actual Tracker has [14 columns](docs/sheet-schema.md#tracker), including application and response dates. Match reasoning goes in `Notes`, rather than a separate score column.
+
+| Status | Company | Title | Location | Notes | ReceivedAt | DiscoveryType | Source |
+|---|---|---|---|---|---|---|---|
+| Candidate | ExampleCo | Senior Product Designer | Toronto, ON | B2C funnel and design-system experience fit | 2026-09-07 | Mail | LinkedIn |
+| Applied | SampleWorks | Product Designer | Remote, Canada | Application confirmation detected | 2026-09-06 | Search | Company Careers |
+
+Read the [fictional daily run](examples/output.example.md) to see matching reasons, exclusions, Tracker updates, and diagnostics before connecting any accounts.
+
+### What it does for you
+
+- Finds opportunities from job-alert email and, if enabled, public web search.
+- Prioritizes roles using your experience and practical constraints, with reasons you can review.
+- Checks against Tracker history so the same posting does not keep creating new rows.
+- Records clear application confirmations and recruiter replies; uncertain evidence goes to human review.
+
+It never submits applications for you. Sheet updates depend on available actions and permissions; if a scheduled write is blocked, the workflow can return an explicit TSV fallback.
 
 ## Start here
 
@@ -18,11 +36,15 @@ Before starting, connect Gmail and Google Drive to ChatGPT.
 
 1. Paste the full `01-bootstrap.md` prompt into a new ChatGPT conversation.
 2. Answer ChatGPT's setup questions naturally.
-3. After setup, the Scheduled Task automatically checks job-alert email and the public web, matches relevant jobs, and adds them to Google Sheets.
+3. After setup, the Scheduled Task checks job-alert email and, if enabled, the public web. It matches relevant jobs and updates Google Sheets when permitted.
 
 No local app, script, terminal command, server, or GitHub Action is required.
 
 `01-bootstrap.md` contains everything needed to set up the workflow.
+
+Your career profile, Gmail content, and Tracker data stay in your connected Google account. The public repository contains reusable workflow files only.
+
+> Product behavior, available apps, and Scheduled Task capabilities can change. Last verified against OpenAI documentation: 2026-09-08.
 
 ## What ChatGPT sets up
 
@@ -91,6 +113,8 @@ Internally, the workflow distinguishes:
 For experienced users, a Strong match should normally have a meaningful reason beyond title similarity.
 
 ## Daily workflow
+
+![Job Search Collector workflow](job-search-collector-flow.png)
 
 At the scheduled time, the workflow can:
 
