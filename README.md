@@ -17,7 +17,7 @@ This **fictional example** shows a few of the Tracker's columns. The actual Trac
 | Candidate | ExampleCo | Senior Product Designer | Toronto, ON | B2C funnel and design-system experience fit | 2026-09-07 | Mail | LinkedIn |
 | Applied | SampleWorks | Product Designer | Remote, Canada | Application confirmation detected | 2026-09-06 | Search | Company Careers |
 
-Read the [fictional daily run](examples/output.example.md) to see matching reasons, exclusions, Tracker updates, and diagnostics before connecting any accounts.
+Follow the [fictional end-to-end example](examples/sample-run.md) from job alert to recruiter reply without connecting any accounts. The [example daily output](examples/output.example.md) shows matching reasons, exclusions, and diagnostics.
 
 ### What it does for you
 
