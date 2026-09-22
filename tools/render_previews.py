@@ -46,24 +46,49 @@ for j,row in enumerate(rows):
 txt(d,(75,653),'Full Tracker: 14 columns. Matching reasons are recorded in Notes; there is no numeric fit score.',16,C['muted'])
 im.save(ASSETS/'tracker-preview.png',optimize=True)
 
-# Animated diagram of a fictional user journey, with the same facts as examples/sample-run.md.
+# Animated mock interface: fictional data, never a recording of connected accounts.
 frames=[]
-steps=[
- ('1 / 4','Job alert received','Sep 7: ExampleCo, Senior Product Designer','LinkedIn alert','A new role appears in Gmail.'),
- ('2 / 4','Fit reviewed','B2C funnel and design-system work fits','Strong match','The profile provides a concrete reason.'),
- ('3 / 4','Tracker updated','Sep 9: application confirmed by email','Status: Applied','The existing row receives AppliedAt.'),
- ('4 / 4','Reply recorded','Sep 12: recruiter asks to schedule a call','RespondedAt filled','The application stays Applied.'),
-]
-for idx,(count,title,sub,badge,explain) in enumerate(steps):
-    im,d=base(1100,615,'From alert to tracked application','Illustrative demo  |  fictional data  |  behavior depends on permissions')
-    rr(d,(55,165,1045,513),C['panel'],23,outline=C['line'],width=2)
-    pill(d,(81,188,158,224),count,C['mint'],C['bg'],15)
-    txt(d,(81,248),title,37,bold=True)
-    txt(d,(81,311),sub,23,C['muted'])
-    rr(d,(81,383,1018,474),C['raised'],17)
-    pill(d,(102,403,323,445),badge,C['mint'] if idx in (1,3) else C['blue'],C['bg'],18)
-    txt(d,(347,412),explain,17,C['white'])
-    for k in range(4): rr(d,(55+k*250,548,274+k*250,558),C['mint'] if k<=idx else C['line'],5)
+for step in range(4):
+    im,d=base(1100,615,'From job alert to tracked reply','Illustrative demo  |  fictional data  |  connected behavior varies')
+    panels=[(55,165,365,510),(390,165,700,510),(725,165,1045,510)]
+    for x1,y1,x2,y2 in panels: rr(d,(x1,y1,x2,y2),C['panel'],17,outline=C['line'],width=2)
+    for x,label,num in [(75,'Gmail alert','01'),(410,'ChatGPT review','02'),(745,'Tracker','03')]:
+        pill(d,(x,183,x+45,217),num,C['raised'],C['mint'],14)
+        txt(d,(x+55,188),label,19,bold=True)
+    # Email: visible from the first frame.
+    rr(d,(74,239,346,451),C['raised'],13)
+    txt(d,(90,256),'LinkedIn Job Alerts',15,C['muted'])
+    txt(d,(90,291),'Senior Product',20,bold=True)
+    txt(d,(90,321),'Designer at ExampleCo',16,C['white'])
+    d.line((90,353,330,353),fill=C['line'],width=2)
+    txt(d,(90,371),'Toronto  /  Hybrid',15,C['blue'])
+    txt(d,(90,402),'B2C funnel, design system',13,C['muted'])
+    # Match: appears in frame two, stays visible afterwards.
+    if step>=1:
+        pill(d,(409,245,558,281),'Strong match',C['mint'],C['bg'],16)
+        txt(d,(410,311),'Why this fits',19,bold=True)
+        txt(d,(410,349),'B2C funnel ownership',15,C['white'])
+        txt(d,(410,381),'Design-system experience',15,C['white'])
+        txt(d,(410,413),'Toronto hybrid preference',14,C['muted'])
+    else:
+        txt(d,(412,318),'Comparing with',18,C['muted'])
+        txt(d,(412,349),'private profile ...',18,C['muted'])
+    # Tracker: candidate row, then applied, then reply date.
+    if step>=2:
+        pill(d,(745,243,861,277),'Applied' if step>=2 else 'Candidate',C['blue'],C['bg'],16)
+        txt(d,(745,304),'ExampleCo',19,bold=True)
+        txt(d,(745,338),'Senior Product Designer',15,C['white'])
+        d.line((745,374,1023,374),fill=C['line'],width=2)
+        txt(d,(745,390),'AppliedAt  Sep 9',15,C['muted'])
+        txt(d,(745,423),'RespondedAt  Sep 12' if step==3 else 'RespondedAt  —',15,C['mint'] if step==3 else C['muted'])
+    else:
+        txt(d,(746,312),'Candidate row',18,C['muted'])
+        txt(d,(746,344),'created if permitted',15,C['muted'])
+    d.line((365,335,386,335),fill=C['mint'],width=5)
+    d.line((700,335,721,335),fill=C['mint'],width=5)
+    labels=['Alert received','Fit evaluated','Application confirmed','Reply detected']
+    txt(d,(56,541),f'{step+1}/4  {labels[step]}',16,C['mint'],True)
+    for k in range(4):rr(d,(465+k*143,547,584+k*143,556),C['mint'] if k<=step else C['line'],5)
     frames.append(im)
 frames[0].save(ASSETS/'sample-workflow.gif',save_all=True,append_images=frames[1:],duration=[2000]*4,loop=0,optimize=True)
 
