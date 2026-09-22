@@ -117,6 +117,32 @@ The Tracker remains exactly 14 columns.
 
 The daily task does not rely on formula columns inside Tracker.
 
+Historical identity matches do not automatically mean suppress.
+
+For the same comparison-normalized Company + Title:
+
+- AppliedAt non-empty, Status=Applied, or Status=Closed -> suppress;
+- Status=Candidate -> re-evaluate;
+- Status=Excluded with `Excluded: ` -> suppress;
+- Status=Excluded with `Fit: Weak. ` -> re-evaluate;
+- Status=Excluded with `Closed: ` -> re-evaluate;
+- Status=Excluded with other non-empty Notes -> suppress as a manual/legacy exclusion;
+- Status=Excluded with blank Notes -> suppress and report only the count in Diagnostics.
+
+Recognized Notes prefixes:
+
+- `Excluded: {reason}` = hard filter;
+- `Fit: Weak. {reason}` = weak-fit judgment;
+- `Closed: {reason}` = posting closed, expired, removed, or unavailable.
+
+When an unapplied historical row surfaces again, update that existing row rather than adding a duplicate. Append `Re-surfaced YYYY-MM-DD via {DiscoveryType} ({Source})` using the current re-discovery path.
+
+`ReceivedAt` is the first-discovery timestamp and must not change on re-surfacing.
+
+`DiscoveryType` and `Source` are also first-discovery provenance and must not change on re-surfacing. Later paths belong only in Notes.
+
+Keep the existing Link while it works. Replace it only when it is unusable and the new Link is usable for the same posting. When replacement occurs, append `Link replaced YYYY-MM-DD` to Notes. A working Link is not replaced merely because a newly found ATS or Careers URL appears more official.
+
 ## Control
 
 | Metric | Value | Notes |
