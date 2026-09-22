@@ -17,7 +17,7 @@ Job Search Collector는 ChatGPT Scheduled Task로 Gmail 채용 알림을 확인�
 | Candidate | ExampleCo | Senior Product Designer | Toronto, ON | B2C 퍼널과 디자인 시스템 경험이 맞음 | 2026-09-07 | Mail | LinkedIn |
 | Applied | SampleWorks | Product Designer | Remote, Canada | 지원 확인 메일 감지 | 2026-09-06 | Search | Company Careers |
 
-계정을 연결하기 전에 [가상 일일 실행 예시](examples/output.example.md)에서 적합도 판단, 제외 사유, Tracker 변경, 진단 정보를 확인할 수 있습니다.
+계정 연결 없이 [가상 실행 예시](examples/sample-run.md)에서 채용 알림부터 리크루터 회신까지의 흐름을 확인할 수 있습니다. [일일 출력 예시](examples/output.example.md)에는 적합도 판단, 제외 사유, 진단 정보가 있습니다.
 
 ### 무엇을 해주나요?
 
