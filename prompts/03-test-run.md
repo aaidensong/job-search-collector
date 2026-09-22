@@ -35,7 +35,7 @@ Return:
 14. if response or missing-application detection is enabled, whether a single-pass inbox scan can be performed for the target period without running a separate company search for every Applied row;
 15. whether clear application-confirmation or recruiter-submission evidence can be distinguished from ambiguous evidence;
 16. whether Web Discovery is enabled, whether it is due today under `last_successful_web_discovery_date < today`, and whether web search is available;
-17. when Web Discovery is due, validate the first-pass query plan against the 12 ATS domain families without exceeding 20 total queries, and report whether broader search would be triggered by the verified-new Strong/Possible threshold;
+17. when Web Discovery is due, validate the first-pass query plan against the 12 ATS domain families without exceeding 20 total queries, and report whether broader search would be triggered by the verified-surfaced Strong/Possible threshold;
 18. verify that a web result is not accepted from a search snippet alone and that a real posting page/open state is checked;
 19. verify that mail rows use DiscoveryType=Mail and web rows use DiscoveryType=Search, with Source reserved for the concrete platform;
 20. verify that unknown eligibility details are flagged for confirmation rather than guessed as hard exclusions;
@@ -48,7 +48,25 @@ Return:
    - `UX / UI` and `UX/UI` compare consistently;
    - supported trailing Company legal suffix variants such as `Inc.` vs no suffix compare consistently;
    - meaningful parentheses content remains distinct;
-23. all permissions, profile, parsing, source, web-discovery, normalization, or completeness failures.
+23. historical-disposition regression checks showing that:
+   - Candidate + blank AppliedAt is re-evaluated rather than suppressed;
+   - non-empty AppliedAt suppresses even if Status is not Applied;
+   - Status=Applied suppresses;
+   - Status=Closed suppresses;
+   - Status=Excluded with `Excluded: ` suppresses;
+   - Status=Excluded with `Fit: Weak. ` is re-evaluated;
+   - Status=Excluded with `Closed: ` is re-evaluated;
+   - Status=Excluded with other non-empty Notes suppresses;
+   - Status=Excluded with blank Notes suppresses and is counted in Diagnostics;
+   - a re-surfaced row reuses the existing row and does not append a duplicate;
+   - ReceivedAt remains unchanged;
+   - DiscoveryType and Source remain unchanged;
+   - Notes receives `Re-surfaced YYYY-MM-DD via {DiscoveryType} ({Source})`;
+   - a working existing Link is preserved even when a newly found ATS/Careers link is available;
+   - Link is replaced only when the existing Link is unusable and the replacement is usable for the same posting;
+   - a Link replacement records `Link replaced YYYY-MM-DD`;
+   - `Closed: posting unavailable` is eligible for re-evaluation when the posting surfaces again;
+24. all permissions, profile, parsing, source, web-discovery, normalization, historical-disposition, or completeness failures.
 
 Pass criteria:
 - private profile readable and valid
@@ -69,6 +87,8 @@ Pass criteria:
 - normalization is applied before within-run dedupe, historical Tracker dedupe, missing-application association, recruiter-submission association, and response association
 - comparison normalization does not require or add Tracker columns
 - existing Tracker rows are not rewritten in test mode
+- historical identity matches are tested as suppress vs re-evaluate decisions rather than automatically treated as duplicates
+- re-surfacing preserves first-discovery provenance and ReceivedAt
 
 Do not say the setup passed if the profile, Gmail, or Sheet required permission failed.
 ```
