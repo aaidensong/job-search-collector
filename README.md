@@ -8,14 +8,20 @@ Job Search Collector uses a ChatGPT Scheduled Task to review Gmail job alerts an
 
 **Gmail alerts + optional web discovery → career fit → one Google Sheets tracker**
 
+![Illustrative four-step demo: fictional job alert, match, application confirmation, and reply](assets/sample-workflow.gif)
+
+*Illustrative sequence with fictional data. This is not a recording of a live connected account.*
+
 ### See the result first
+
+![Illustrative Google Sheets Tracker preview with fictional companies and selected columns](assets/tracker-preview.png)
 
 This **fictional example** shows a few of the Tracker's columns. The actual Tracker has [14 columns](docs/sheet-schema.md#tracker), including application and response dates. Match reasoning goes in `Notes`, rather than a separate score column.
 
 | Status | Company | Title | Location | Notes | ReceivedAt | DiscoveryType | Source |
 |---|---|---|---|---|---|---|---|
-| Candidate | ExampleCo | Senior Product Designer | Toronto, ON | B2C funnel and design-system experience fit | 2026-09-07 | Mail | LinkedIn |
-| Applied | SampleWorks | Product Designer | Remote, Canada | Application confirmation detected | 2026-09-06 | Search | Company Careers |
+| Candidate | Northstar Labs | Product Designer | Remote, Canada | Relevant consumer onboarding work | 2026-09-08 | Search | Company Careers |
+| Applied | ExampleCo | Senior Product Designer | Toronto, ON | B2C funnel and design-system experience fit | 2026-09-07 | Mail | LinkedIn |
 
 Follow the [fictional end-to-end example](examples/sample-run.md) from job alert to recruiter reply without connecting any accounts. The [example daily output](examples/output.example.md) shows matching reasons, exclusions, and diagnostics.
 
@@ -200,6 +206,10 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
+├── assets/
+│   ├── sample-workflow.gif
+│   ├── tracker-preview.png
+│   └── social-preview.png
 ├── job-search-collector-flow.png
 ├── job-search-collector-flow-ko.png
 ├── prompts/
@@ -209,6 +219,8 @@ job-search-collector/
 │   └── 04-update-profile.md
 ├── profiles/
 │   └── profile.template.md
+├── tools/
+│   └── render_previews.py
 ├── docs/
 └── examples/
 ```
