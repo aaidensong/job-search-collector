@@ -136,7 +136,7 @@ The scan marker advances only after the target period is fully processed success
 
 Web Discovery is a conditional module inside the existing Scheduled Task, not a second task. It uses a maximum of 20 search queries per run. Search and mail use the same hard-filter and fit rules.
 
-The initial search pass covers 12 verified ATS domain families: Workday, Greenhouse, Ashby, Lever, BambooHR, iCIMS, Dayforce, SmartRecruiters, Rippling, Recruitee, Teamtailor, and Personio. If the first pass produces fewer than five verified new Strong/Possible roles, remaining query budget is used for broader web search. Hiring-post discovery is outside this Phase 1 boundary.
+The initial search pass covers 12 verified ATS domain families: Workday, Greenhouse, Ashby, Lever, BambooHR, iCIMS, Dayforce, SmartRecruiters, Rippling, Recruitee, Teamtailor, and Personio. If the first pass produces fewer than five verified surfaced Strong/Possible roles, remaining query budget is used for broader web search. Hiring-post discovery is outside this Phase 1 boundary.
 
 A web result is not treated as a normal candidate from a snippet alone. The workflow must open and validate the actual posting page and open state. Missing posted dates are noted without being guessed.
 
