@@ -186,6 +186,10 @@ A few important safeguards are built into the workflow:
 - application status changes require clear evidence;
 - no-response cases are not automatically closed by default.
 
+## Contribute
+
+Want to improve a job-alert format, matching edge case, example, or translation? See [CONTRIBUTING.md](CONTRIBUTING.md) and [open an issue](https://github.com/aaidensong/job-search-collector/issues/new/choose). Use fictional or redacted data when reporting a problem.
+
 ## Advanced documentation
 
 The README is intentionally user-focused. Implementation details live in `docs/`:
@@ -206,6 +210,7 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
+├── LICENSE-SCOPE.md
 ├── assets/
 │   ├── sample-workflow.gif
 │   ├── tracker-preview.png
@@ -243,10 +248,10 @@ Current versions:
 
 ## License
 
-Except where otherwise noted, the original prompts, documentation, examples, and templates in this repository are licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+Except where otherwise noted, the original prompts, documentation, examples, templates, preview assets, and optional preview-rendering script are licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
 
 Suggested attribution:
 
 > Job Search Collector by Aiden, licensed under CC BY 4.0.
 
-See `LICENSE` and https://creativecommons.org/licenses/by/4.0/ for details.
+See the standard terms in [LICENSE](LICENSE) and the repository-specific exclusions in [LICENSE-SCOPE.md](LICENSE-SCOPE.md).
