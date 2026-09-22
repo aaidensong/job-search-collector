@@ -2,13 +2,37 @@
 
 # Job Search Collector
 
-Job Search Collector는 Gmail로 들어오는 채용 알림 메일을 읽고, 필요하면 공개 웹에서도 추가 공고를 찾고, 개인 커리어 프로필과 비교해 적합도를 판단한 뒤 Google Sheets Tracker에 정리하는 ChatGPT Scheduled Task 워크플로입니다.
+**채용 알림을 내 경력에 맞는 구직 Tracker로 정리하세요.**
 
-공개 저장소에는 워크플로 로직과 템플릿만 포함됩니다. 실제 커리어 프로필, 이메일 데이터, 지원 이력은 각 사용자의 연결된 Google 계정 안에 남습니다.
+Job Search Collector는 ChatGPT Scheduled Task로 Gmail 채용 알림을 확인하고, 원하면 공개 웹에서도 공고를 찾습니다. 비공개 커리어 프로필과 비교해 적합한 이유를 제시하고, 중복을 확인하며, 사용 가능한 연결 기능이 허용할 때 Google Sheets에서 지원과 회신 이력을 관리합니다.
 
-![Job Search Collector 작업 흐름](job-search-collector-flow-ko.png)
+**Gmail 채용 알림 + 선택적 웹 탐색 → 경력 적합도 판단 → 하나의 Google Sheets Tracker**
 
-> 제품 동작, 연결 가능한 앱, Scheduled Task 기능은 변경될 수 있습니다. OpenAI 문서 기준 마지막 확인일: 2026-09-08.
+![가상 채용 알림부터 적합도 판단, 지원 확인, 회신까지 보여주는 4단계 예시](assets/sample-workflow.gif)
+
+*가상 데이터를 사용한 설명용 영상입니다. 실제 연결 계정의 녹화 화면은 아닙니다.*
+
+### 결과 먼저 보기
+
+![가상 회사와 Tracker 일부 열을 보여주는 Google Sheets 형태의 예시](assets/tracker-preview.png)
+
+아래는 **가상 데이터로 만든 예시**이며 Tracker 열 일부만 보여줍니다. 실제 Tracker에는 지원일과 회신일을 포함해 [14개 열](docs/sheet-schema.md#tracker)이 있습니다. 적합도 근거는 별도의 점수 열 대신 `Notes`에 기록됩니다.
+
+| Status | Company | Title | Location | Notes | ReceivedAt | DiscoveryType | Source |
+|---|---|---|---|---|---|---|---|
+| Candidate | Northstar Labs | Product Designer | Remote, Canada | 소비자 온보딩 경험이 맞음 | 2026-09-08 | Search | Company Careers |
+| Applied | ExampleCo | Senior Product Designer | Toronto, ON | B2C 퍼널과 디자인 시스템 경험이 맞음 | 2026-09-07 | Mail | LinkedIn |
+
+계정 연결 없이 [가상 실행 예시](examples/sample-run.md)에서 채용 알림부터 리크루터 회신까지의 흐름을 확인할 수 있습니다. [일일 출력 예시](examples/output.example.md)에는 적합도 판단, 제외 사유, 진단 정보가 있습니다.
+
+### 무엇을 해주나요?
+
+- 채용 알림 메일과, 활성화한 경우 공개 웹에서 공고를 찾습니다.
+- 경력과 실제 근무 조건에 맞춰 검토 우선순위를 정하고 근거를 보여줍니다.
+- Tracker 이력과 비교해 같은 공고가 새 행으로 반복 등록되는 일을 방지합니다.
+- 명확한 지원 확인과 리크루터 회신을 기록하고, 불확실한 내용은 사용자 검토로 보냅니다.
+
+사용자를 대신해 지원서를 제출하지 않습니다. Google Sheets 직접 쓰기는 사용 가능한 기능과 권한에 따라 달라지며, 예약 실행에서 쓰기가 막히면 명시적인 TSV 대안을 반환할 수 있습니다.
 
 ## 시작하기
 
@@ -20,11 +44,15 @@ Job Search Collector는 Gmail로 들어오는 채용 알림 메일을 읽고, �
 
 1. `01-bootstrap.md` 전체 내용을 새 ChatGPT 대화에 붙여넣습니다.
 2. ChatGPT의 설정 질문에 자연스럽게 답합니다.
-3. 설정이 끝나면 Scheduled Task가 채용 알림 메일과 공개 웹을 자동으로 확인하고, 적합한 공고를 찾아 Google Sheets에 추가합니다.
+3. 설정이 끝나면 Scheduled Task가 채용 알림 메일과, 활성화한 경우 공개 웹을 확인합니다. 적합한 공고를 찾아 권한이 허용할 때 Google Sheets를 업데이트합니다.
 
 별도 앱, 로컬 프로그램, Python 스크립트, 터미널, 서버, GitHub Action은 필요하지 않습니다.
 
 `01-bootstrap.md` 하나에 워크플로 설정에 필요한 내용이 모두 포함되어 있습니다.
+
+커리어 프로필, Gmail 내용, Tracker 데이터는 연결된 Google 계정 안에 남습니다. 공개 저장소에는 재사용 가능한 워크플로 파일만 포함됩니다.
+
+> 제품 동작, 연결 가능한 앱, Scheduled Task 기능은 변경될 수 있습니다. OpenAI 문서 기준 마지막 확인일: 2026-09-08.
 
 ## ChatGPT가 처음 설정하는 것
 
@@ -96,6 +124,8 @@ Job Search Collector는 직무명이 정확히 같다는 이유만으로 적합�
 
 ## 매일 실행되는 흐름
 
+![Job Search Collector 작업 흐름](job-search-collector-flow-ko.png)
+
 예약 시간이 되면 워크플로는 다음을 수행할 수 있습니다.
 
 1. 아직 처리하지 않은 기간의 Gmail 채용 알림 읽기
@@ -158,6 +188,10 @@ Bootstrap은 Job Search Collector 전용 구조를 사용하는 새 Tracker를 �
 - 지원 상태 변경은 명확한 근거가 있을 때만 수행
 - 무응답이라는 이유만으로 자동 Closed 처리하지 않음
 
+## 기여하기
+
+채용 알림 형식, 매칭 예외, 예시, 번역을 개선하려면 [CONTRIBUTING.md](CONTRIBUTING.md)를 읽고 [Issue를 등록](https://github.com/aaidensong/job-search-collector/issues/new/choose)해 주세요. 문제 사례에는 가상 또는 익명화한 데이터만 사용합니다.
+
 ## 상세 문서
 
 README는 일반 사용자 중심으로 단순하게 유지합니다. 구현 세부사항은 `docs/`에서 확인할 수 있습니다.
@@ -178,6 +212,11 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
+├── LICENSE-SCOPE.md
+├── assets/
+│   ├── sample-workflow.gif
+│   ├── tracker-preview.png
+│   └── social-preview.png
 ├── job-search-collector-flow.png
 ├── job-search-collector-flow-ko.png
 ├── prompts/
@@ -187,6 +226,8 @@ job-search-collector/
 │   └── 04-update-profile.md
 ├── profiles/
 │   └── profile.template.md
+├── tools/
+│   └── render_previews.py
 ├── docs/
 └── examples/
 ```
@@ -209,10 +250,10 @@ job-search-collector/
 
 ## 라이선스
 
-별도 표기가 없는 한 이 저장소의 원본 프롬프트, 문서, 예시, 템플릿은 **Creative Commons Attribution 4.0 International (CC BY 4.0)** 라이선스를 따릅니다.
+별도 표기가 없는 한 이 저장소의 원본 프롬프트, 문서, 예시, 템플릿, 미리보기 이미지, 선택적 이미지 생성 스크립트는 **Creative Commons Attribution 4.0 International (CC BY 4.0)** 라이선스를 따릅니다.
 
 권장 표기:
 
 > Job Search Collector by Aiden, licensed under CC BY 4.0.
 
-자세한 내용은 `LICENSE`와 https://creativecommons.org/licenses/by/4.0/ 를 참고하세요.
+표준 약관은 [LICENSE](LICENSE), 저장소별 적용 범위와 제외 사항은 [LICENSE-SCOPE.md](LICENSE-SCOPE.md)를 참고하세요.

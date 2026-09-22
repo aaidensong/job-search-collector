@@ -2,13 +2,37 @@
 
 # Job Search Collector
 
-Job Search Collector is a ChatGPT Scheduled Task workflow that reads job-alert emails from Gmail, can discover additional jobs on the public web, matches postings against a private career profile, and keeps opportunities organized in Google Sheets when permissions allow.
+**Turn job alerts into a job tracker tailored to your experience.**
 
-The public repository contains workflow logic and templates only. Each user's career profile, email data, and application history stay in that user's connected Google account.
+Job Search Collector uses a ChatGPT Scheduled Task to review Gmail job alerts and, optionally, discover public job postings. It compares opportunities with your private career profile, surfaces reasons for a match, removes duplicates, and tracks applications and replies in Google Sheets when the connected tools allow it.
 
-![Job Search Collector workflow](job-search-collector-flow.png)
+**Gmail alerts + optional web discovery → career fit → one Google Sheets tracker**
 
-> Product behavior, available apps, and Scheduled Task capabilities can change. Last verified against OpenAI documentation: 2026-09-08.
+![Illustrative four-step demo: fictional job alert, match, application confirmation, and reply](assets/sample-workflow.gif)
+
+*Illustrative sequence with fictional data. This is not a recording of a live connected account.*
+
+### See the result first
+
+![Illustrative Google Sheets Tracker preview with fictional companies and selected columns](assets/tracker-preview.png)
+
+This **fictional example** shows a few of the Tracker's columns. The actual Tracker has [14 columns](docs/sheet-schema.md#tracker), including application and response dates. Match reasoning goes in `Notes`, rather than a separate score column.
+
+| Status | Company | Title | Location | Notes | ReceivedAt | DiscoveryType | Source |
+|---|---|---|---|---|---|---|---|
+| Candidate | Northstar Labs | Product Designer | Remote, Canada | Relevant consumer onboarding work | 2026-09-08 | Search | Company Careers |
+| Applied | ExampleCo | Senior Product Designer | Toronto, ON | B2C funnel and design-system experience fit | 2026-09-07 | Mail | LinkedIn |
+
+Follow the [fictional end-to-end example](examples/sample-run.md) from job alert to recruiter reply without connecting any accounts. The [example daily output](examples/output.example.md) shows matching reasons, exclusions, and diagnostics.
+
+### What it does for you
+
+- Finds opportunities from job-alert email and, if enabled, public web search.
+- Prioritizes roles using your experience and practical constraints, with reasons you can review.
+- Checks against Tracker history so the same posting does not keep creating new rows.
+- Records clear application confirmations and recruiter replies; uncertain evidence goes to human review.
+
+It never submits applications for you. Sheet updates depend on available actions and permissions; if a scheduled write is blocked, the workflow can return an explicit TSV fallback.
 
 ## Start here
 
@@ -18,11 +42,15 @@ Before starting, connect Gmail and Google Drive to ChatGPT.
 
 1. Paste the full `01-bootstrap.md` prompt into a new ChatGPT conversation.
 2. Answer ChatGPT's setup questions naturally.
-3. After setup, the Scheduled Task automatically checks job-alert email and the public web, matches relevant jobs, and adds them to Google Sheets.
+3. After setup, the Scheduled Task checks job-alert email and, if enabled, the public web. It matches relevant jobs and updates Google Sheets when permitted.
 
 No local app, script, terminal command, server, or GitHub Action is required.
 
 `01-bootstrap.md` contains everything needed to set up the workflow.
+
+Your career profile, Gmail content, and Tracker data stay in your connected Google account. The public repository contains reusable workflow files only.
+
+> Product behavior, available apps, and Scheduled Task capabilities can change. Last verified against OpenAI documentation: 2026-09-08.
 
 ## What ChatGPT sets up
 
@@ -92,6 +120,8 @@ For experienced users, a Strong match should normally have a meaningful reason b
 
 ## Daily workflow
 
+![Job Search Collector workflow](job-search-collector-flow.png)
+
 At the scheduled time, the workflow can:
 
 1. read the unprocessed job-alert period from Gmail;
@@ -156,6 +186,10 @@ A few important safeguards are built into the workflow:
 - application status changes require clear evidence;
 - no-response cases are not automatically closed by default.
 
+## Contribute
+
+Want to improve a job-alert format, matching edge case, example, or translation? See [CONTRIBUTING.md](CONTRIBUTING.md) and [open an issue](https://github.com/aaidensong/job-search-collector/issues/new/choose). Use fictional or redacted data when reporting a problem.
+
 ## Advanced documentation
 
 The README is intentionally user-focused. Implementation details live in `docs/`:
@@ -176,6 +210,11 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
+├── LICENSE-SCOPE.md
+├── assets/
+│   ├── sample-workflow.gif
+│   ├── tracker-preview.png
+│   └── social-preview.png
 ├── job-search-collector-flow.png
 ├── job-search-collector-flow-ko.png
 ├── prompts/
@@ -185,6 +224,8 @@ job-search-collector/
 │   └── 04-update-profile.md
 ├── profiles/
 │   └── profile.template.md
+├── tools/
+│   └── render_previews.py
 ├── docs/
 └── examples/
 ```
@@ -207,10 +248,10 @@ Current versions:
 
 ## License
 
-Except where otherwise noted, the original prompts, documentation, examples, and templates in this repository are licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+Except where otherwise noted, the original prompts, documentation, examples, templates, preview assets, and optional preview-rendering script are licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
 
 Suggested attribution:
 
 > Job Search Collector by Aiden, licensed under CC BY 4.0.
 
-See `LICENSE` and https://creativecommons.org/licenses/by/4.0/ for details.
+See the standard terms in [LICENSE](LICENSE) and the repository-specific exclusions in [LICENSE-SCOPE.md](LICENSE-SCOPE.md).
