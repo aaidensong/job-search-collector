@@ -133,6 +133,57 @@ Use the same Company + Title comparison normalization for:
 
 Do not use raw string equality for these identity checks.
 
+## Historical duplicate and re-surfacing rules
+
+A comparison-normalized Company + Title identity match does not automatically mean suppress.
+
+When matching Tracker history is found, apply this order:
+
+1. AppliedAt non-empty -> suppress.
+2. Else Status = Applied -> suppress.
+3. Else Status = Closed -> suppress.
+4. Else Status = Excluded:
+   - Notes begins `Excluded: ` -> suppress as a hard exclusion.
+   - Notes begins `Fit: Weak. ` -> re-evaluate.
+   - Notes begins `Closed: ` -> re-evaluate.
+   - any other non-empty Notes -> suppress as a manual/legacy exclusion.
+   - blank Notes -> suppress and report only the count in Diagnostics.
+5. Otherwise, including Status = Candidate -> re-evaluate.
+
+Do not attempt to determine whether a matching posting is a repost, a new requisition, or repeated collection. Do not use job ID, URL differences, or posting date to decide that.
+
+For a re-evaluated row, use the current profile and posting:
+
+- Strong or Possible -> Status = Candidate and surface it again.
+- Weak -> Status = Excluded with Notes beginning `Fit: Weak. `.
+- hard exclusion -> Status = Excluded with Notes beginning `Excluded: `.
+- posting closed, expired, removed, or unavailable -> Status = Excluded with Notes beginning `Closed: `.
+
+Re-use the existing Tracker row rather than appending a duplicate.
+
+Preserve these first-discovery values:
+
+- ReceivedAt
+- DiscoveryType
+- Source
+
+Record the new path only in Notes using:
+
+`Re-surfaced YYYY-MM-DD via {DiscoveryType} ({Source})`
+
+Link policy for a historical row:
+
+- keep the existing Link while it works;
+- replace it only when the existing Link is unusable and the newly found Link is usable for the same posting;
+- do not replace a working link merely because the new route is an official ATS or Careers page;
+- if replaced, append `Link replaced YYYY-MM-DD` to Notes.
+
+The three recognized Excluded-note prefixes have distinct meanings:
+
+- `Excluded: {reason}` = hard filter and future suppress.
+- `Fit: Weak. {reason}` = fit judgment and future re-evaluation.
+- `Closed: {reason}` = unavailable/expired/removed/closed posting and future re-evaluation.
+
 ## Hard exclusions
 
 Use only explicit profile rules or unambiguous posting facts.
