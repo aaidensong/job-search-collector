@@ -212,7 +212,7 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
-├── LICENSE-SCOPE.md
+├── ATTRIBUTION.md
 ├── assets/
 │   ├── sample-workflow.gif
 │   ├── tracker-preview.png
@@ -256,4 +256,4 @@ job-search-collector/
 
 > Job Search Collector by Aiden, licensed under CC BY 4.0.
 
-표준 약관은 [LICENSE](LICENSE), 저장소별 적용 범위와 제외 사항은 [LICENSE-SCOPE.md](LICENSE-SCOPE.md)를 참고하세요.
+표준 약관은 [LICENSE](LICENSE), 저장소별 적용 범위와 제3자 저작물 표기는 [ATTRIBUTION.md](ATTRIBUTION.md)를 참고하세요.

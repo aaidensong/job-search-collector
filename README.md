@@ -210,7 +210,7 @@ job-search-collector/
 ├── README.md
 ├── README.ko.md
 ├── LICENSE
-├── LICENSE-SCOPE.md
+├── ATTRIBUTION.md
 ├── assets/
 │   ├── sample-workflow.gif
 │   ├── tracker-preview.png
@@ -254,4 +254,4 @@ Suggested attribution:
 
 > Job Search Collector by Aiden, licensed under CC BY 4.0.
 
-See the standard terms in [LICENSE](LICENSE) and the repository-specific exclusions in [LICENSE-SCOPE.md](LICENSE-SCOPE.md).
+See the standard terms in [LICENSE](LICENSE) and the repository-specific scope and third-party attribution in [ATTRIBUTION.md](ATTRIBUTION.md).
