@@ -8,13 +8,13 @@ Job Search Collector는 ChatGPT Scheduled Task로 Gmail 채용 알림을 확인�
 
 **Gmail 채용 알림 + 선택적 웹 탐색 → 경력 적합도 판단 → 하나의 Google Sheets Tracker**
 
-![가상 채용 알림부터 적합도 판단, 지원 확인, 회신까지 보여주는 4단계 예시](assets/sample-workflow.gif)
+![가상 채용 알림부터 적합도 판단, 지원 확인, 회신까지 보여주는 5단계 한국어 예시](assets/sample-workflow-ko.gif)
 
 *가상 데이터를 사용한 설명용 영상입니다. 실제 연결 계정의 녹화 화면은 아닙니다.*
 
 ### 결과 먼저 보기
 
-![가상 회사와 Tracker 일부 열을 보여주는 Google Sheets 형태의 예시](assets/tracker-preview.png)
+![가상 회사와 Tracker 일부 열을 보여주는 한국어 화면 예시](assets/tracker-preview-ko.png)
 
 아래는 **가상 데이터로 만든 예시**이며 Tracker 열 일부만 보여줍니다. 실제 Tracker에는 지원일과 회신일을 포함해 [14개 열](docs/sheet-schema.md#tracker)이 있습니다. 적합도 근거는 별도의 점수 열 대신 `Notes`에 기록됩니다.
 
