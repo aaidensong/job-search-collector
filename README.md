@@ -31,6 +31,7 @@ Follow the [fictional end-to-end example](examples/sample-run.md) from job alert
 - Prioritizes roles using your experience and practical constraints, with reasons you can review.
 - Checks against Tracker history so the same posting does not keep creating new rows.
 - Records clear application confirmations and recruiter replies; uncertain evidence goes to human review.
+- Audits where discovered jobs were merged, suppressed, filtered, or surfaced so a small result set can be explained automatically.
 
 It never submits applications for you. Sheet updates depend on available actions and permissions; if a scheduled write is blocked, the workflow can return an explicit TSV fallback.
 
@@ -184,7 +185,8 @@ A few important safeguards are built into the workflow:
 - unfamiliar company relationships are not guessed;
 - ambiguous recruiter or response evidence goes to Human review;
 - application status changes require clear evidence;
-- no-response cases are not automatically closed by default.
+- no-response cases are not automatically closed by default;
+- every unique discovered job is accounted for through a final disposition, and historical suppression requires an identifiable Tracker match.
 
 ## Contribute
 
@@ -202,6 +204,7 @@ The README is intentionally user-focused. Implementation details live in `docs/`
 - [`docs/architecture.md`](docs/architecture.md) - system architecture and responsibilities
 - [`docs/profile-file.md`](docs/profile-file.md) - private profile format
 - [`docs/troubleshooting.md`](docs/troubleshooting.md) - common setup and runtime issues
+- [`docs/observability.md`](docs/observability.md) - collection audit metrics and privacy-safe telemetry boundary
 
 ## Repository structure
 
