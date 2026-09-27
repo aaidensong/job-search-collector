@@ -66,7 +66,18 @@ Return:
    - Link is replaced only when the existing Link is unusable and the replacement is usable for the same posting;
    - a Link replacement records `Link replaced YYYY-MM-DD`;
    - `Closed: posting unavailable` is eligible for re-evaluation when the posting surfaces again;
-24. all permissions, profile, parsing, source, web-discovery, normalization, historical-disposition, or completeness failures.
+24. discovery-accounting checks showing that:
+   - raw Mail and Web discoveries are counted separately;
+   - source-level raw counts are available;
+   - raw discoveries = within-run duplicate discoveries removed + unique jobs after merge;
+   - every unique job has exactly one final disposition;
+   - final-disposition counts sum to unique jobs after merge;
+25. historical-suppression evidence checks showing that:
+   - every SUPPRESS decision identifies the matching Tracker record;
+   - suppression reasons are counted separately;
+   - same Company + different normalized Title is never used as suppression evidence;
+26. low-result output behavior showing that when surfaced Strong/Possible is 3 or fewer, the Collection audit automatically includes source counts, final dispositions, historical suppression reasons, Tracker row count, and Applied row count;
+27. all permissions, profile, parsing, source, web-discovery, normalization, historical-disposition, accounting, or completeness failures.
 
 Pass criteria:
 - private profile readable and valid
@@ -89,6 +100,9 @@ Pass criteria:
 - existing Tracker rows are not rewritten in test mode
 - historical identity matches are tested as suppress vs re-evaluate decisions rather than automatically treated as duplicates
 - re-surfacing preserves first-discovery provenance and ReceivedAt
+- discovery accounting reconciles raw discoveries, within-run duplicate removals, unique jobs, and final dispositions
+- every historical suppression has identifiable Tracker evidence
+- a small surfaced result automatically explains where the rest of the unique jobs went
 
 Do not say the setup passed if the profile, Gmail, or Sheet required permission failed.
 ```
