@@ -10,6 +10,14 @@ Do not rely on ChatGPT Memory, custom instructions, old chats, Project files, up
 
 My career data is stored in the private profile referenced by Config.profile_reference. Read that profile on every run before evaluating job fit.
 
+CORE RELIABILITY PRINCIPLES
+
+- A successful tool call does not prove that the required data was fully retrieved. Validate the retrieved scope before making absence or suppression judgments.
+- Negative judgments such as "no jobs", "not found", "duplicate", or "no response" require evidence that the relevant scope was actually checked.
+- A discovered job must not disappear silently between extraction and output. Every unique job admitted to the candidate pipeline must end in exactly one final disposition.
+- Validation failure is not an automatic stop. Retry or use a broader read method when possible, and report unresolved incompleteness instead of inventing certainty.
+- Prefer recall over silent false negatives. When evidence is insufficient to suppress a plausible job, keep it visible through Possible match or Human review rather than quietly dropping it.
+
 [1. LOAD OPERATIONAL CONFIGURATION]
 
 Read Config, Sources, Tracker, and Control.
@@ -392,6 +400,28 @@ Do not infer a parent company from an unfamiliar subsidiary or brand name.
 Preserve the source wording.
 If two records may be the same job but company identity is uncertain, mark `suspected duplicate` in Human review instead of merging automatically.
 
+[8A. ACCOUNT FOR DISCOVERY AND WITHIN-RUN DEDUPLICATION]
+
+Maintain a discovery audit for every run.
+
+Count each identifiable job extracted from enabled Mail sources and each identifiable Web Discovery job admitted to the candidate pipeline before within-run deduplication.
+
+Record:
+- raw_mail_discoveries, including a count per enabled Mail Source;
+- raw_web_discoveries, including a count per concrete web Source when Web Discovery runs;
+- raw_discoveries = raw_mail_discoveries + raw_web_discoveries;
+- within_run_duplicate_discoveries_removed;
+- unique_jobs_after_merge.
+
+`within_run_duplicate_discoveries_removed` means the number of raw discovery records removed by merging, not the number of duplicate groups.
+
+Require:
+`raw_discoveries = within_run_duplicate_discoveries_removed + unique_jobs_after_merge`
+
+If this invariant does not hold, first find the missing or double-counted discovery and correct the audit. If it still cannot be reconciled, report the mismatch in Diagnostics and do not claim that the candidate set is complete.
+
+Mail and Web are separate discovery inputs but share one merged candidate pipeline. A job found by both Mail and Search is a within-run duplicate, not a historical suppression.
+
 [9. APPLY EXPLICIT HARD FILTERS]
 
 Run only when profile_read_status = VERIFIED.
@@ -507,9 +537,49 @@ Link handling for a historical row:
 
 Same comparison-normalized Company + different comparison-normalized Title is not an identity match; keep it, with concise prior-company context only when useful.
 
+For every SUPPRESS decision caused by Tracker history, retain auditable evidence identifying the matching Tracker record. Prefer a row number when available. Otherwise record enough stable evidence to identify the row: Company, Title, Status, AppliedAt, and the Notes prefix or suppression reason.
+
+A historical suppression is not valid merely because the company looks similar. It must be supported by an actual comparison-normalized Company + Title identity match from the verified Tracker read.
+
+Track historical suppression counts separately by reason:
+- AppliedAt non-empty
+- Status = Applied
+- Status = Closed
+- Status = Excluded with `Excluded: `
+- Status = Excluded with other non-empty Notes
+- Status = Excluded with blank Notes
+
+Also track these secondary history metrics without using them as final-disposition categories:
+- historical identity matches
+- historical rows re-evaluated
+- historical rows re-surfaced
+- historical rows suppressed
+
 Staffing or recruiting agencies are not automatically the employer. Do not use an agency name by itself to prove an identity match.
 
 `DiscoveryType` and `Source` always describe the first discovery path. Re-discovery paths belong only in Notes. Do not use a Channel field.
+
+[11A. ACCOUNT FOR FINAL JOB DISPOSITIONS]
+
+Every job in `unique_jobs_after_merge` must end in exactly one final disposition:
+
+- Surfaced Strong/Possible
+- Historical suppression
+- Hard exclusion
+- Weak fit
+- Human review / unresolved
+- Closed / unavailable
+
+A re-evaluated historical row that surfaces again belongs to `Surfaced Strong/Possible`; re-evaluation and re-surfacing are secondary history metrics, not additional final dispositions.
+
+Require:
+`unique_jobs_after_merge = Surfaced + Historical suppression + Hard exclusion + Weak fit + Human review/unresolved + Closed/unavailable`
+
+Do not count one unique job in more than one final-disposition category.
+
+If this invariant does not hold, first find the missing or double-counted job and correct the audit. If it remains unresolved, report the mismatch and do not present the run as fully accounted.
+
+The purpose of this accounting is not to increase the recommendation count artificially. It is to distinguish low source input, within-run repetition, historical suppression, explicit hard filtering, weak-fit decisions, unresolved ambiguity, and closed or unavailable postings.
 
 [12. SINGLE-PASS INBOX RECONCILIATION]
 
@@ -679,6 +749,23 @@ Always produce these sections, even when empty.
 At the top:
 `Scan period: ...`
 
+## Collection audit
+
+Always show a concise audit:
+- raw Mail discoveries
+- raw Web discoveries
+- within-run duplicate discoveries removed
+- unique jobs after merge
+- surfaced Strong/Possible count
+
+If surfaced Strong/Possible is 3 or fewer, or if any accounting invariant failed, also show:
+- raw discovery count by Source;
+- the full final-disposition breakdown;
+- historical suppression breakdown by reason;
+- Tracker row count and Applied row count.
+
+This section must appear automatically. The user should not need to ask why the result is small.
+
 ## Best matches
 Company | Title | Location | Work mode | Salary | Match | Why | Source | Apply
 
@@ -735,6 +822,15 @@ Report:
 - number of messages read per enabled source
 - number of all-inbox messages read for reconciliation when enabled
 - number of extracted postings before filtering
+- raw Mail discoveries and per-source counts
+- raw Web discoveries and per-source counts
+- within-run duplicate discoveries removed
+- unique jobs after merge
+- final-disposition counts and whether their sum equals unique jobs
+- historical suppression count and reason breakdown
+- historical identity matches, re-evaluated rows, re-surfaced rows, and suppressed rows
+- Tracker total row count and Applied row count
+- whether every historical suppression has identifiable Tracker evidence
 - link extraction failures
 - parsing or classification ambiguities
 - automatic Tracker write result
