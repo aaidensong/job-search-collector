@@ -184,6 +184,52 @@ The three recognized Excluded-note prefixes have distinct meanings:
 - `Fit: Weak. {reason}` = fit judgment and future re-evaluation.
 - `Closed: {reason}` = unavailable/expired/removed/closed posting and future re-evaluation.
 
+## Discovery accounting and suppression evidence
+
+The workflow must be able to explain why a small result set is small.
+
+For each run, count raw discoveries separately for Mail and Web Discovery, then merge within-run duplicates.
+
+Definitions:
+
+- `raw discoveries`: identifiable jobs admitted to the candidate pipeline before within-run deduplication;
+- `within-run duplicate discoveries removed`: raw discovery records removed by merging;
+- `unique jobs after merge`: jobs remaining after within-run deduplication.
+
+Require:
+
+`raw discoveries = within-run duplicate discoveries removed + unique jobs after merge`
+
+Every unique job must then receive exactly one final disposition:
+
+- Surfaced Strong/Possible
+- Historical suppression
+- Hard exclusion
+- Weak fit
+- Human review / unresolved
+- Closed / unavailable
+
+Require:
+
+`unique jobs after merge = sum of final dispositions`
+
+Re-evaluated and re-surfaced are history events, not final dispositions. A historical row that re-surfaces as Strong or Possible is counted under Surfaced.
+
+Historical suppression must be evidence-based. For every suppression, the run must retain an identifiable matching Tracker record, preferably the row number when available, otherwise enough stable fields to identify the record and suppression reason.
+
+Break historical suppression down by reason:
+
+- AppliedAt non-empty
+- Status=Applied
+- Status=Closed
+- Excluded with `Excluded: `
+- Excluded with other non-empty Notes
+- Excluded with blank Notes
+
+Do not use accounting alone as proof that a judgment was correct. Accounting detects where jobs disappeared; suppression evidence checks whether the historical-removal judgment had a real matching record.
+
+When evidence is insufficient to suppress a plausible role, prefer Human review or a visible fit classification over silent removal.
+
 ## Hard exclusions
 
 Use only explicit profile rules or unambiguous posting facts.
