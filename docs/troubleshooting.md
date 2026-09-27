@@ -58,6 +58,31 @@ Possible causes:
 Every enabled source with zero messages should be listed.
 If all major sources unexpectedly return zero messages, review alert delivery, sender patterns, and account configuration.
 
+## Too few jobs surfaced
+
+Do not assume a small result means the alert sources are broken.
+
+Read the run's Collection audit in this order:
+
+1. Check raw Mail discoveries and the per-source Mail counts.
+2. Check whether Web Discovery ran and how many raw Web discoveries it contributed.
+3. Compare raw discoveries with unique jobs after within-run merging.
+4. Review the final-disposition breakdown.
+5. Review historical suppression by reason.
+6. Check Tracker total rows and Applied rows to see whether long-running history may be contributing to suppression.
+
+Interpretation examples:
+
+- Low raw Mail and low raw Web: source coverage or market-volume issue.
+- One Mail source suddenly at zero: sender pattern, alert delivery, or source-specific issue.
+- High raw discoveries but low unique jobs: repeated discovery across messages/platforms.
+- High unique jobs but low surfaced count: inspect historical suppression, hard exclusions, weak fit, and Human review.
+- Historical suppression growing with Tracker size: the history policy may be reducing surfaced results over time.
+
+Do not change matching thresholds merely to raise the count. First identify the stage responsible for the loss.
+
+A historical suppression should be treated as trustworthy only when the run can identify the matching Tracker record that caused it.
+
 ## A sender produced the wrong kind of message
 
 A sender address does not define one permanent message type.
