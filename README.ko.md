@@ -31,6 +31,7 @@ Job Search Collector는 ChatGPT Scheduled Task로 Gmail 채용 알림을 확인�
 - 경력과 실제 근무 조건에 맞춰 검토 우선순위를 정하고 근거를 보여줍니다.
 - Tracker 이력과 비교해 같은 공고가 새 행으로 반복 등록되는 일을 방지합니다.
 - 명확한 지원 확인과 리크루터 회신을 기록하고, 불확실한 내용은 사용자 검토로 보냅니다.
+- 발견한 공고가 어디에서 병합, 억제, 필터링, 노출됐는지 계상해 결과가 적을 때 원인을 자동으로 설명합니다.
 
 사용자를 대신해 지원서를 제출하지 않습니다. Google Sheets 직접 쓰기는 사용 가능한 기능과 권한에 따라 달라지며, 예약 실행에서 쓰기가 막히면 명시적인 TSV 대안을 반환할 수 있습니다.
 
@@ -187,6 +188,7 @@ Bootstrap은 Job Search Collector 전용 구조를 사용하는 새 Tracker를 �
 - 애매한 리크루터 제출이나 회신 근거는 Human review로 보냄
 - 지원 상태 변경은 명확한 근거가 있을 때만 수행
 - 무응답이라는 이유만으로 자동 Closed 처리하지 않음
+- 모든 고유 공고를 최종 disposition으로 계상하고, historical suppression에는 식별 가능한 Tracker 근거를 요구
 
 ## 기여하기
 
@@ -204,6 +206,7 @@ README는 일반 사용자 중심으로 단순하게 유지합니다. 구현 세
 - [`docs/architecture.md`](docs/architecture.md) - 전체 아키텍처와 책임 구분
 - [`docs/profile-file.md`](docs/profile-file.md) - 비공개 프로필 형식
 - [`docs/troubleshooting.md`](docs/troubleshooting.md) - 설정 및 실행 중 문제 해결
+- [`docs/observability.md`](docs/observability.md) - 수집 계상 지표와 개인정보 보호형 텔레메트리 경계
 
 ## 저장소 구조
 

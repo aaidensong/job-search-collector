@@ -241,6 +241,19 @@ If an application generates no confirmation and no clear recruiter-submission ev
 
 ## 10. Monitoring and delivery layer
 
+The Scheduled Task maintains a local discovery audit on every run.
+
+The audit separates:
+- raw Mail discoveries, including per-source counts;
+- raw Web discoveries, including per-source counts;
+- within-run duplicate discoveries removed;
+- unique jobs after merge;
+- final dispositions;
+- historical suppression reasons;
+- Tracker total rows and Applied rows.
+
+The purpose is to distinguish source scarcity from downstream loss. A small surfaced result should be explainable without requiring the user to ask a follow-up question.
+
 The Scheduled Task result provides:
 - scan period
 - readable shortlist with reasons and application links
@@ -253,6 +266,21 @@ The Scheduled Task result provides:
 - TSV only when automatic Tracker writing could not be applied
 
 Enabled alert sources with zero messages are always surfaced. If all major configured sources unexpectedly return zero messages, the workflow warns that alert delivery, sender patterns, or account configuration may need review.
+
+### Central telemetry boundary
+
+The current workflow does not send user run data to the project maintainer.
+
+Career profile content, Gmail content, company names, titles, application history, salaries, and Tracker rows remain in the user's connected account.
+
+If project-level telemetry is added later, it must be:
+- explicit opt-in;
+- anonymous or pseudonymous;
+- limited to aggregate operational metrics such as counts, ratios, module flags, success/failure state, and coarse timing;
+- documented before collection begins;
+- independent from the core workflow so telemetry failure never blocks job collection.
+
+The local Collection audit is required regardless of whether central telemetry is ever implemented.
 
 ## Data flow
 
