@@ -2,6 +2,28 @@
 
 Scan period: 2026-09-07 to 2026-09-07 (America/Toronto)
 
+## Collection audit
+
+- Raw Mail discoveries: 5
+- Raw Web discoveries: 3
+- Within-run duplicate discoveries removed: 0
+- Unique jobs after merge: 8
+- Surfaced Strong/Possible: 1
+
+Because only 1 job surfaced, the expanded breakdown is shown automatically:
+
+- Historical suppression: 2
+  - AppliedAt non-empty: 1
+  - Status=Applied: 1
+- Hard exclusion: 1
+- Weak fit: 3
+- Human review / unresolved: 1
+- Closed / unavailable: 0
+- Tracker rows: 42
+- Applied rows: 9
+
+Check: 8 unique jobs = 1 surfaced + 2 historical suppression + 1 hard exclusion + 3 weak fit + 1 human review + 0 closed/unavailable.
+
 ## Best matches
 
 | Company | Title | Location | Work mode | Salary | Match | Why | Source | Apply |
@@ -52,6 +74,8 @@ None.
 - Web Discovery: completed, 12 site queries, broader search not needed
 - Tracker read: VERIFIED, 42 rows read / 42 expected
 - Extracted postings before filtering: 8
+- Discovery accounting: VERIFIED
+- Historical suppressions with identifiable Tracker evidence: 2 / 2
 - Automatic Tracker write: applied
 - Link extraction failures: 1
 
