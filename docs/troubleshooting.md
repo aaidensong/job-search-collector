@@ -62,26 +62,45 @@ If all major sources unexpectedly return zero messages, review alert delivery, s
 
 Do not assume a small result means the alert sources are broken.
 
-Read the run's Collection audit in this order:
+Possible causes include:
+
+1. source coverage or low market volume;
+2. within-run duplicate merging;
+3. hard exclusions, Weak fit, or Human review;
+4. historical suppression from already-applied or intentionally excluded Tracker history;
+5. an incomplete/truncated digest body that prevented every job in one message from being extracted.
+
+Read the run's Collection audit and Diagnostics in this order:
 
 1. Check raw Mail discoveries and the per-source Mail counts.
-2. Check whether Web Discovery ran and how many raw Web discoveries it contributed.
-3. Compare raw discoveries with unique jobs after within-run merging.
-4. Review the final-disposition breakdown.
-5. Review historical suppression by reason.
-6. Check Tracker total rows and Applied rows to see whether long-running history may be contributing to suppression.
+2. Check digest completeness metrics:
+   - digest_messages_checked
+   - digest_verified_complete
+   - digest_incomplete
+   - digest_unknown_completeness
+   - expected, extracted, and unrecovered job counts when known
+   - whether raw-MIME recovery was attempted and how many jobs it recovered
+3. Check whether Web Discovery ran and how many raw Web discoveries it contributed.
+4. Compare raw discoveries with unique jobs after within-run merging.
+5. Review the final-disposition breakdown.
+6. Review historical suppression by reason.
+7. Check Tracker total rows and Applied rows to see whether long-running history may be contributing to suppression.
 
 Interpretation examples:
 
 - Low raw Mail and low raw Web: source coverage or market-volume issue.
 - One Mail source suddenly at zero: sender pattern, alert delivery, or source-specific issue.
+- A digest marked INCOMPLETE with unrecovered jobs: the message body was not fully recovered, so the day's Mail coverage is lower than the source actually delivered.
+- A digest marked UNKNOWN: the workflow could not establish a reliable expected count. Under the initial policy this appears in Diagnostics only and is not itself proof of truncation.
 - High raw discoveries but low unique jobs: repeated discovery across messages/platforms.
 - High unique jobs but low surfaced count: inspect historical suppression, hard exclusions, weak fit, and Human review.
 - Historical suppression growing with Tracker size: the history policy may be reducing surfaced results over time.
 
+If a digest is INCOMPLETE, compare the expected and extracted counts. For example, a subject with one representative job plus `29 more jobs` implies 30 expected jobs. Check whether a raw-MIME retry recovered the missing entries and whether any unrecovered count remains.
+
 Do not change matching thresholds merely to raise the count. First identify the stage responsible for the loss.
 
-A historical suppression should be treated as trustworthy only when the run can identify the matching Tracker record that caused it.
+A historical suppression should be treated as trustworthy only when the run can identify the matching Tracker record that caused it. An incomplete digest affects only that message's candidate coverage and should not be confused with Tracker-read incompleteness.
 
 ## A sender produced the wrong kind of message
 
