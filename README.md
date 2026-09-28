@@ -179,6 +179,7 @@ A few important safeguards are built into the workflow:
 - missed scheduled runs can catch up using `Control.last_successful_scan_date`;
 - sender address alone does not define a message type;
 - partial Tracker reads are not used to prove that something is absent;
+- digest emails are checked for incomplete extraction when their expected job count can be verified, and partial recovery is surfaced instead of silently treated as complete;
 - harmless Company/Title formatting differences such as dash variants, whitespace, case, and supported legal suffixes are normalized for duplicate comparison;
 - previously seen but unapplied jobs can surface again instead of being permanently hidden as historical duplicates;
 - missing links are left blank instead of being invented;
