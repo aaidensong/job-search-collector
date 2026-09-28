@@ -77,7 +77,16 @@ Return:
    - suppression reasons are counted separately;
    - same Company + different normalized Title is never used as suppression evidence;
 26. low-result output behavior showing that when surfaced Strong/Possible is 3 or fewer, the Collection audit automatically includes source counts, final dispositions, historical suppression reasons, Tracker row count, and Applied row count;
-27. all permissions, profile, parsing, source, web-discovery, normalization, historical-disposition, accounting, or completeness failures.
+27. digest-completeness regression checks showing that:
+   - an explicit expected count with exact extraction is VERIFIED;
+   - a subject with one representative job plus `29 more jobs` produces expected_job_count = 30;
+   - expected 30 with fewer than 30 extracted is INCOMPLETE;
+   - an INCOMPLETE digest triggers a raw-MIME reread when raw MIME is available;
+   - raw-MIME recovery that reaches the expected count changes the digest to VERIFIED;
+   - raw-MIME recovery that remains short records the unrecovered count while keeping recovered jobs;
+   - a digest with no reliable total is UNKNOWN and is recorded in Diagnostics only;
+   - one INCOMPLETE digest does not invalidate the whole daily run;
+28. all permissions, profile, parsing, source, web-discovery, normalization, historical-disposition, accounting, digest-completeness, or completeness failures.
 
 Pass criteria:
 - private profile readable and valid
@@ -86,6 +95,10 @@ Pass criteria:
 - Tracker completeness verified, or an explicit INCOMPLETE diagnostic is produced without unsupported absence claims
 - enabled-source search works
 - digest extraction works when a digest exists
+- digest completeness is VERIFIED, INCOMPLETE, or UNKNOWN without changing the 14-column Tracker schema
+- known-count digest truncation triggers raw-MIME recovery
+- UNKNOWN digest completeness remains Diagnostics-only under the initial policy
+- an INCOMPLETE digest never invalidates the full daily run by itself
 - no fabricated application link
 - Tracker output schema is exactly 14 columns
 - DiscoveryType and Source are separate fields; DiscoveryType is only Mail or Search
