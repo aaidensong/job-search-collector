@@ -1354,6 +1354,14 @@ Do not rely on ChatGPT Memory, custom instructions, old chats, Project files, up
 
 My career data is stored in the private profile referenced by Config.profile_reference. Read that profile on every run before evaluating job fit.
 
+CORE RELIABILITY PRINCIPLES
+
+- A successful tool call does not prove that the required data was fully retrieved. Validate the retrieved scope before making absence or suppression judgments.
+- Negative judgments such as "no jobs", "not found", "duplicate", or "no response" require evidence that the relevant scope was actually checked.
+- A discovered job must not disappear silently between extraction and output. Every unique job admitted to the candidate pipeline must end in exactly one final disposition.
+- Validation failure is not an automatic stop. Retry or use a broader read method when possible, and report unresolved incompleteness instead of inventing certainty.
+- Prefer recall over silent false negatives. When evidence is insufficient to suppress a plausible job, keep it visible through Possible match or Human review rather than quietly dropping it.
+
 [1. LOAD OPERATIONAL CONFIGURATION]
 
 Read Config, Sources, Tracker, and Control.
@@ -1550,6 +1558,54 @@ Read each message individually even when Gmail grouped several messages into one
 
 If DigestMode is true, open the body and extract every distinct job in the message. Do not assume the subject contains the only job.
 
+DIGEST COMPLETENESS CHECK
+
+For every DigestMode message, validate whether the message appears to have been fully extracted.
+
+Set a runtime-only digest_completeness value:
+- VERIFIED
+- INCOMPLETE
+- UNKNOWN
+
+Do not add any Tracker column for this state.
+
+1. Determine an expected job count only when the message provides a reliable count or list structure.
+   - If a subject shows one representative job followed by `N more jobs`, expected_job_count = N + 1. Example: one named job plus `29 more jobs` means 30 expected jobs, not 29.
+   - If the body contains a list structure whose complete entry count is more reliable than the subject wording, use the body-list count instead.
+   - For LinkedIn-style digests, use the count of the identifiable job entries only when the full list structure can be read reliably.
+   - Never treat the number in `N more jobs` as the total count without accounting for any representative job shown separately.
+   - If the format cannot be interpreted confidently, do not guess an expected count. Set digest_completeness = UNKNOWN.
+
+2. Count the distinct jobs actually extracted from the message as extracted_job_count.
+
+3. If expected_job_count is known:
+   - extracted_job_count >= expected_job_count -> digest_completeness = VERIFIED;
+   - extracted_job_count < expected_job_count -> digest_completeness = INCOMPLETE and attempt recovery.
+
+4. Recovery for an INCOMPLETE digest:
+   - reread the same Gmail message using the raw MIME form when the Gmail action supports original RFC822/raw MIME retrieval;
+   - inspect the raw MIME text/plain and text/html content as available and re-extract distinct jobs;
+   - merge recovered jobs without double-counting jobs already extracted;
+   - recompute extracted_job_count and compare it with expected_job_count;
+   - if the expected count is reached, change digest_completeness to VERIFIED;
+   - if it is still short, keep digest_completeness = INCOMPLETE and compute unrecovered_job_count = expected_job_count - extracted_job_count.
+
+The current Gmail message-read capability supports raw MIME retrieval. Do not assume byte-range reads, body-offset reads, chunk continuation, or body pagination unless such a capability is explicitly available in the execution environment.
+
+5. If expected_job_count cannot be established reliably:
+   - digest_completeness = UNKNOWN;
+   - process every job that was successfully extracted;
+   - record UNKNOWN in Diagnostics only;
+   - do not show a user-facing coverage warning solely because the state is UNKNOWN.
+   This is the initial policy. UNKNOWN frequency will be accumulated in Diagnostics and can be reconsidered after operating data exists.
+
+6. An INCOMPLETE digest does NOT invalidate the full daily run.
+   - process every successfully recovered job normally;
+   - do not invent missing jobs;
+   - do not use the incomplete message to claim that no additional jobs existed in that digest;
+   - record the missing coverage in Diagnostics;
+   - continue processing other messages and sources.
+
 For each extracted job, capture when available:
 - company
 - title
@@ -1736,6 +1792,28 @@ Do not infer a parent company from an unfamiliar subsidiary or brand name.
 Preserve the source wording.
 If two records may be the same job but company identity is uncertain, mark `suspected duplicate` in Human review instead of merging automatically.
 
+[8A. ACCOUNT FOR DISCOVERY AND WITHIN-RUN DEDUPLICATION]
+
+Maintain a discovery audit for every run.
+
+Count each identifiable job extracted from enabled Mail sources and each identifiable Web Discovery job admitted to the candidate pipeline before within-run deduplication.
+
+Record:
+- raw_mail_discoveries, including a count per enabled Mail Source;
+- raw_web_discoveries, including a count per concrete web Source when Web Discovery runs;
+- raw_discoveries = raw_mail_discoveries + raw_web_discoveries;
+- within_run_duplicate_discoveries_removed;
+- unique_jobs_after_merge.
+
+`within_run_duplicate_discoveries_removed` means the number of raw discovery records removed by merging, not the number of duplicate groups.
+
+Require:
+`raw_discoveries = within_run_duplicate_discoveries_removed + unique_jobs_after_merge`
+
+If this invariant does not hold, first find the missing or double-counted discovery and correct the audit. If it still cannot be reconciled, report the mismatch in Diagnostics and do not claim that the candidate set is complete.
+
+Mail and Web are separate discovery inputs but share one merged candidate pipeline. A job found by both Mail and Search is a within-run duplicate, not a historical suppression.
+
 [9. APPLY EXPLICIT HARD FILTERS]
 
 Run only when profile_read_status = VERIFIED.
@@ -1851,9 +1929,49 @@ Link handling for a historical row:
 
 Same comparison-normalized Company + different comparison-normalized Title is not an identity match; keep it, with concise prior-company context only when useful.
 
+For every SUPPRESS decision caused by Tracker history, retain auditable evidence identifying the matching Tracker record. Prefer a row number when available. Otherwise record enough stable evidence to identify the row: Company, Title, Status, AppliedAt, and the Notes prefix or suppression reason.
+
+A historical suppression is not valid merely because the company looks similar. It must be supported by an actual comparison-normalized Company + Title identity match from the verified Tracker read.
+
+Track historical suppression counts separately by reason:
+- AppliedAt non-empty
+- Status = Applied
+- Status = Closed
+- Status = Excluded with `Excluded: `
+- Status = Excluded with other non-empty Notes
+- Status = Excluded with blank Notes
+
+Also track these secondary history metrics without using them as final-disposition categories:
+- historical identity matches
+- historical rows re-evaluated
+- historical rows re-surfaced
+- historical rows suppressed
+
 Staffing or recruiting agencies are not automatically the employer. Do not use an agency name by itself to prove an identity match.
 
 `DiscoveryType` and `Source` always describe the first discovery path. Re-discovery paths belong only in Notes. Do not use a Channel field.
+
+[11A. ACCOUNT FOR FINAL JOB DISPOSITIONS]
+
+Every job in `unique_jobs_after_merge` must end in exactly one final disposition:
+
+- Surfaced Strong/Possible
+- Historical suppression
+- Hard exclusion
+- Weak fit
+- Human review / unresolved
+- Closed / unavailable
+
+A re-evaluated historical row that surfaces again belongs to `Surfaced Strong/Possible`; re-evaluation and re-surfacing are secondary history metrics, not additional final dispositions.
+
+Require:
+`unique_jobs_after_merge = Surfaced + Historical suppression + Hard exclusion + Weak fit + Human review/unresolved + Closed/unavailable`
+
+Do not count one unique job in more than one final-disposition category.
+
+If this invariant does not hold, first find the missing or double-counted job and correct the audit. If it remains unresolved, report the mismatch and do not present the run as fully accounted.
+
+The purpose of this accounting is not to increase the recommendation count artificially. It is to distinguish low source input, within-run repetition, historical suppression, explicit hard filtering, weak-fit decisions, unresolved ambiguity, and closed or unavailable postings.
 
 [12. SINGLE-PASS INBOX RECONCILIATION]
 
@@ -2000,6 +2118,7 @@ Advance Control.last_successful_scan_date to target_end only when ALL of the fol
 
 Zero messages from a source is not itself a failure.
 A source query/access failure is a failure.
+A digest with digest_completeness = INCOMPLETE or UNKNOWN is not by itself a source query/access failure and does not by itself block advancement of last_successful_scan_date. Successfully recovered jobs from that digest remain valid input. Record the coverage limitation in Diagnostics, and show the user-facing coverage warning only for INCOMPLETE.
 
 If any core condition above fails, do not advance last_successful_scan_date. This allows the next scheduled run to catch up automatically.
 
@@ -2022,6 +2141,23 @@ Always produce these sections, even when empty.
 
 At the top:
 `Scan period: ...`
+
+## Collection audit
+
+Always show a concise audit:
+- raw Mail discoveries
+- raw Web discoveries
+- within-run duplicate discoveries removed
+- unique jobs after merge
+- surfaced Strong/Possible count
+
+If surfaced Strong/Possible is 3 or fewer, or if any accounting invariant failed, also show:
+- raw discovery count by Source;
+- the full final-disposition breakdown;
+- historical suppression breakdown by reason;
+- Tracker row count and Applied row count.
+
+This section must appear automatically. The user should not need to ask why the result is small.
 
 ## Best matches
 Company | Title | Location | Work mode | Salary | Match | Why | Source | Apply
@@ -2065,6 +2201,10 @@ List every enabled source with its message count for the target period.
 Explicitly list enabled sources with zero messages.
 If all major enabled job-alert sources unexpectedly return zero messages, warn that job-alert delivery, sender patterns, or account configuration may need review.
 
+If any digest remains INCOMPLETE after recovery, show a concise user-facing coverage warning before Diagnostics. Include the source/message identifier when useful, expected job count, extracted job count, and unrecovered job count. Make clear that recovered jobs were still processed and that the rest of the daily run remained valid.
+
+Do not show a user-facing coverage warning solely for digest_completeness = UNKNOWN. UNKNOWN is Diagnostics-only in the initial policy.
+
 ## Diagnostics
 Report:
 - profile_read_status and profile_version
@@ -2078,7 +2218,25 @@ Report:
 - tracker_read_status and row-count comparison
 - number of messages read per enabled source
 - number of all-inbox messages read for reconciliation when enabled
+- digest_messages_checked
+- digest_verified_complete
+- digest_incomplete
+- digest_unknown_completeness
+- digest_expected_jobs when known
+- digest_extracted_jobs
+- raw-MIME recovery attempts and jobs recovered by retry
+- digest_unrecovered_jobs
+- per-INCOMPLETE-digest evidence such as source/message date, expected count, extracted count, and unrecovered count
 - number of extracted postings before filtering
+- raw Mail discoveries and per-source counts
+- raw Web discoveries and per-source counts
+- within-run duplicate discoveries removed
+- unique jobs after merge
+- final-disposition counts and whether their sum equals unique jobs
+- historical suppression count and reason breakdown
+- historical identity matches, re-evaluated rows, re-surfaced rows, and suppressed rows
+- Tracker total row count and Applied row count
+- whether every historical suppression has identifiable Tracker evidence
 - link extraction failures
 - parsing or classification ambiguities
 - automatic Tracker write result
@@ -2088,6 +2246,8 @@ DIAGNOSTIC RULES
 - State evidence for anomalies.
 - Separate confirmed from suspected.
 - Never claim absence when the relevant source was not fully read.
+- A digest marked INCOMPLETE limits confidence only for that message's candidate coverage; it does not invalidate otherwise successful processing of the day.
+- A digest marked UNKNOWN is recorded in Diagnostics only under the initial policy.
 - Never substitute Memory when the private profile is unavailable.
 
 END EMBEDDED DAILY TASK PROMPT
