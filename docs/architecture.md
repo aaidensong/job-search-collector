@@ -123,6 +123,9 @@ Responsibilities:
 - search the Phase 1 ATS domain families first and broaden only when the verified-new Strong/Possible threshold is not met
 - verify actual posting pages before normal candidate writes
 - expand digest messages
+- validate digest completeness when a reliable expected job count or list structure is available
+- retry incomplete digests through raw MIME retrieval when supported
+- keep recovered jobs even when one digest remains incomplete
 - classify messages by actual content
 - merge mail and web candidates into one candidate pool
 - extract structured jobs
@@ -165,6 +168,38 @@ Comparison values are not Tracker columns.
 The same comparison logic is used for within-run deduplication, historical Tracker comparison, Web Discovery new-role counting, application-confirmation association, recruiter-submission association, and response association.
 
 Existing Tracker rows are not migrated or rewritten by this layer. They are normalized in memory when compared.
+
+## 5B. Digest completeness layer
+
+Digest completeness is an ingestion-quality check and is separate from Tracker completeness.
+
+For each digest message, the workflow uses a runtime-only state:
+
+- VERIFIED
+- INCOMPLETE
+- UNKNOWN
+
+When the subject or body exposes a reliable expected job count, compare it with the number of distinct jobs extracted.
+
+A subject that contains one representative job followed by `N more jobs` means the expected count is `N + 1`. For example, one named job plus `29 more jobs` means 30 expected jobs. When the body list structure is more reliable, prefer the complete list count. If the format cannot be interpreted confidently, use UNKNOWN rather than guessing.
+
+When a digest is INCOMPLETE, retry the same Gmail message using raw MIME retrieval when available. Merge newly recovered jobs without double-counting and compare again.
+
+If recovery still falls short:
+
+- keep and process every successfully recovered job;
+- record expected, extracted, and unrecovered counts in Diagnostics;
+- do not invent missing jobs;
+- do not invalidate the entire daily run solely because one digest is incomplete.
+
+UNKNOWN is Diagnostics-only in the initial policy. No user-facing coverage warning is shown solely for UNKNOWN. Its frequency is accumulated so the policy can be revisited after operating data exists.
+
+The key distinction is:
+
+- Tracker incomplete -> history-dependent operation is unsafe.
+- Digest incomplete -> only that message's candidate coverage is incomplete.
+
+Therefore a Tracker completeness failure can block history-dependent writes and scan-marker advancement, while a single incomplete digest does not automatically invalidate otherwise successful processing for the day.
 
 ## 6. History and completeness layer
 
@@ -310,7 +345,7 @@ Control.last_successful_scan_date -> calculate catch-up period
 Private profile + Config + Sources + Tracker
         |
         v
-Job-alert Gmail + Web Discovery -> extraction -> identity normalization -> hard filters -> fit matching
+Job-alert Gmail + Web Discovery -> extraction -> digest completeness check -> identity normalization -> hard filters -> fit matching
         |
         +------------------------------+
         |                              |
