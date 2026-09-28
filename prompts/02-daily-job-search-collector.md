@@ -774,6 +774,7 @@ Advance Control.last_successful_scan_date to target_end only when ALL of the fol
 
 Zero messages from a source is not itself a failure.
 A source query/access failure is a failure.
+A digest with digest_completeness = INCOMPLETE or UNKNOWN is not by itself a source query/access failure and does not by itself block advancement of last_successful_scan_date. Successfully recovered jobs from that digest remain valid input. Record the coverage limitation in Diagnostics, and show the user-facing coverage warning only for INCOMPLETE.
 
 If any core condition above fails, do not advance last_successful_scan_date. This allows the next scheduled run to catch up automatically.
 
