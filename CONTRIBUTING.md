@@ -8,6 +8,7 @@ Thanks for helping improve Job Search Collector. Small fixes and clear reproduct
 - Add a redacted example of a job-alert email format the workflow misses.
 - Describe a matching or duplicate-detection edge case.
 - Test onboarding, Scheduled Task runs, or the explicit TSV fallback.
+  Use [`docs/connected-validation.md`](docs/connected-validation.md) when reporting connected Scheduled Task behavior.
 
 Open an [issue](https://github.com/aaidensong/job-search-collector/issues/new/choose) for bugs, ideas, and new job-alert sources. Search existing issues first. For a substantial workflow change, describe the problem and expected behavior in an issue before editing prompts.
 
