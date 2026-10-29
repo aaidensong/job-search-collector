@@ -206,6 +206,7 @@ The README is intentionally user-focused. Implementation details live in `docs/`
 - [`docs/profile-file.md`](docs/profile-file.md) - private profile format
 - [`docs/troubleshooting.md`](docs/troubleshooting.md) - common setup and runtime issues
 - [`docs/observability.md`](docs/observability.md) - collection audit metrics and privacy-safe telemetry boundary
+- [`docs/connected-validation.md`](docs/connected-validation.md) - privacy-safe checklist for validating Scheduled Task read/write behavior
 
 ## Repository structure
 
