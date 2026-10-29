@@ -208,6 +208,7 @@ README는 일반 사용자 중심으로 단순하게 유지합니다. 구현 세
 - [`docs/profile-file.md`](docs/profile-file.md) - 비공개 프로필 형식
 - [`docs/troubleshooting.md`](docs/troubleshooting.md) - 설정 및 실행 중 문제 해결
 - [`docs/observability.md`](docs/observability.md) - 수집 계상 지표와 개인정보 보호형 텔레메트리 경계
+- [`docs/connected-validation.md`](docs/connected-validation.md) - Scheduled Task 읽기/쓰기 동작을 안전하게 검증하는 체크리스트
 
 ## 저장소 구조
 
